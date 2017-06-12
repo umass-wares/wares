@@ -2,7 +2,7 @@ class mode_800(object):
 
     def __init__(self):
 
-        self.bitcode = 'adc5g_800mhz_qbs_4ch_2017_May_03_1259.bof.gz'
+        self.bitcode = 'adc5g_800mhz_qbs_4inbb_2017_May_26_1449.bof.gz'
         self.clk = 1600
         self.bandwidth = 800
         self.ADCstreams = 8
