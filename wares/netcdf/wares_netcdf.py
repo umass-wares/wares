@@ -1,11 +1,15 @@
 from collections import OrderedDict
 from .lmtnetcdffile import LMTNetCDFFile
+from .waresdata import WaresData
+from .wares_header import WaresHeader
 #from wares_header import WaresHeader
 #from wares_data import WaresData
+from .wares_scan import WaresScan
 from netCDF4 import Dataset,Variable
 import numpy
 #from lmtnetcdf import LMTNetCDFFile
 import netCDF4
+import os
 
 dimensions = {
     #'Header.Mode.Bitcode': ('Header.Mode.Bitcode_slen', 100),
@@ -46,6 +50,12 @@ variables = {
                              {'long_name': 'Accumulation Number'}),
     'Data.Integrate.sync_n': (numpy.dtype(int), ('time', ),
                               {'long_name': 'Sync count'}),
+    'Data.Integrate.sync_scale': (numpy.dtype(int), ('time', ),
+                                  {'long_name': 'Sync Scale'}),
+    'Data.Integrate.sync_period': (numpy.dtype(int), ('time', ),
+                                  {'long_name': 'Sync Period'}),
+    'Data.Integrate.sync_time': (numpy.dtype(int), ('time', ),
+                                  {'long_name': 'Sync Time'}),    
     'Data.Integrate.read_time': (numpy.dtype('float'), ('time', ),
                                  {'long_name': 'Read time',
                                   'units': 'seconds'}),
@@ -71,7 +81,7 @@ header_variables = {
 
 class WaresNetCDFFile(LMTNetCDFFile):
 
-    def __init__(self, filename, mode='w'):
+    def __init__(self, filename, mode='r'):
         if mode in ('r', 'a') and not os.path.exists(filename):
             raise Error('NetCDF Error', 'File %s not found' % filename)
         LMTNetCDFFile.__init__(self, filename, mode)
@@ -98,26 +108,26 @@ class WaresNetCDFFile(LMTNetCDFFile):
         return WaresData(variables)
 
     def _make_hdus(self):
-        if len(self.nc.groups) > 0:
-            #more than one group available,
-            #but don't open everything just the first one
-            #so you don't run out of memory
-            i = 0
-            for key, group in self.nc.groups.items():
-                if i == 0:
-                    data = self._populate_data(group.variables)
-                    header = self._populate_headers(group.variables, group.dimensions)
-                    self.hdus[key] = WaresScan(data=data, header=header,
-                                               filename=self.filename)
-                else:
-                    self.hdus[key] = None
-                i += 1
-        else:
-            #only one single root group
-            data = self._populate_data(self.nc.variables)
-            header = self._populate_headers(self.nc.variables, self.nc.dimensions)
-            self.hdus['rootgrp'] = WaresScan(data=data, header=header,
-                                             filename=self.filename)
+        # if len(self.nc.groups) > 0:
+        #     #more than one group available,
+        #     #but don't open everything just the first one
+        #     #so you don't run out of memory
+        #     i = 0
+        #     for key, group in self.nc.groups.items():
+        #         if i == 0:
+        #             data = self._populate_data(group.variables)
+        #             header = self._populate_headers(group.variables, group.dimensions)
+        #             self.hdus[key] = WaresScan(data=data, header=header,
+        #                                        filename=self.filename)
+        #         else:
+        #             self.hdus[key] = None
+        #         i += 1
+        # else:
+        #only one single root group
+        data = self._populate_data(self.nc.variables)
+        header = self._populate_headers(self.nc.variables, self.nc.dimensions)
+        self.hdus['rootgrp'] = WaresScan(data=data, header=header,
+                                         filename=self.filename)
         self.hdu = self.hdus.values()[0]
 
     #sdef make_hdu(self, spectrometer, 
@@ -133,7 +143,8 @@ class WaresNetCDFFile(LMTNetCDFFile):
             var = self.nc.createVariable(varname, dtype, dims)
             for attrname, attrval in ncattrs.items():
                 var.setncattr(attrname, attrval)
-        var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S%d' % len(specobj.mode.bitcode)), ('Header.Mode.Bitcode_slen', ))
+        #var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S%d' % len(specobj.mode.bitcode)), ('Header.Mode.Bitcode_slen', ))
+        var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S1'), ('Header.Mode.Bitcode_slen', ))
         var = self.nc.createVariable('Data.Integrate.Data', numpy.dtype('float'), ('time', 'numchannels'))
         var.setncattr('long_name', 'Spectrum')
         
@@ -153,6 +164,9 @@ class WaresNetCDFFile(LMTNetCDFFile):
         self.nc.variables['Data.Integrate.sync_n'][self.data_index] = specdata.sync_n
         self.nc.variables['Data.Integrate.read_time'][self.data_index] = specdata.read_time
         self.nc.variables['Data.Integrate.Data'][self.data_index, :] = specdata.data
+        self.nc.variables['Data.Integrate.sync_scale'][self.data_index] = specobj.sync_scale
+        self.nc.variables['Data.Integrate.sync_period'][self.data_index] = specobj.sync_period
+        self.nc.variables['Data.Integrate.sync_time'][self.data_index] = specobj.sync_time
         self.data_index += 1
         
     def setup_scan(self, specobj, inp):
@@ -169,14 +183,14 @@ class WaresNetCDFFile(LMTNetCDFFile):
         self.nc.sync()
         self.nc.close()
         
-    def _make_hdu(self):
+    # def _make_hdu(self):
 
-        #data = self._populate_data(self.variables)
-        #header = self._populate_headers(self.variables, self.dimensions)
+    #     #data = self._populate_data(self.variables)
+    #     #header = self._populate_headers(self.variables, self.dimensions)
 
-        self.ds.createDimension('numchannels', self.dimensions['numchannels'])
-        self.ds.createVariable('spectrum', numpy.dtype(numpy.float32), 'numchannels')
-        self.ds.variables['spectrum'] = self.variables['spectrum']
-        #self.nc.variables['spectrum'].__setattr__('test', 0)
+    #     self.ds.createDimension('numchannels', self.dimensions['numchannels'])
+    #     self.ds.createVariable('spectrum', numpy.dtype(numpy.float32), 'numchannels')
+    #     self.ds.variables['spectrum'] = self.variables['spectrum']
+    #     #self.nc.variables['spectrum'].__setattr__('test', 0)
 
-        self.ds.close()
+    #     self.ds.close()

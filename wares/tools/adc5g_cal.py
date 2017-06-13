@@ -12,6 +12,9 @@ import math
 from matplotlib import pyplot as plt
 from matplotlib import mlab
 from matplotlib.mlab import psd, detrend_mean
+from pkg_resources import resource_string
+import io
+import os
 
 #
 # Functions used by the fitting routines
@@ -558,8 +561,11 @@ class ADC5g_Calibration_Tools ():
         """
 	   Updates ogp from .npz file
 	"""
-
-	df = np.load(fname)
+        if not os.path.exists(fname):
+                data = resource_string(__name__, 'ogp_data/%s' % fname)
+	        df = np.load(io.BytesIO(data))
+        else:
+                df = np.load(fname)
 	multi_ogp = df['multi_ogp']
 	chans = df['chans']
 
@@ -832,8 +838,11 @@ class ADC5g_Calibration_Tools ():
         """
 	   Updates INL from .npz file
 	"""
-
-	df = np.load(fname)
+        if not os.path.exists(fname):
+                data = resource_string(__name__, 'ogp_data/%s' % fname)
+	        df = np.load(io.BytesIO(data))
+        else:
+                df = np.load(fname)
 	multi_inl = df['multi_inl']
 	chans = df['chans']
 

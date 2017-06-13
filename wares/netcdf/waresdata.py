@@ -1,4 +1,4 @@
-from lmtdata import LMTdata
+from lmtdata import LMTData
 
 class WaresData(LMTData):
     def __init__(self, ncvariables):

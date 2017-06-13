@@ -10,8 +10,12 @@ from wares.netcdf.wares_netcdf import WaresNetCDFFile
 import datetime
 
 class Spectrometer(object):
-    def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024):
+    def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
+                 default_ogp_file='ogp_data/ogp_chans01.npz',
+                 default_inl_file='ogp_data/inl_chans01.npz'):
 
+        self.default_ogp_file = default_ogp_file
+        self.default_inl_file = default_inl_file        
         self.roach_id = roach_id
         self.katcp_port = katcp_port 
 
@@ -44,6 +48,7 @@ class Spectrometer(object):
         self.configure()
         self.calADC()
         self.nc = None
+
         
     def calc_sync_period(self, scale):
 
@@ -92,8 +97,8 @@ class Spectrometer(object):
 
         print '------------------------'
         print 'Loading default OGP/INL corrections to ADCs'
-        self.adc_cal_tools.update_ogp(fname='ogp_data/ogp_chans01.npz')
-        self.adc_cal_tools.update_inl(fname='ogp_data/inl_chans01.npz')
+        self.adc_cal_tools.update_ogp(fname=self.default_ogp_file)
+        self.adc_cal_tools.update_inl(fname=self.default_inl_file)
 
     def reset(self):
 

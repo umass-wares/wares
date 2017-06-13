@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from .ordered_dict import OrderedDict
 import numpy
 try:
     from netCDF4 import Variable as NetCDFVariable
