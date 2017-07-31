@@ -1,14 +1,14 @@
 class mode_800(object):
 
-    def __init__(self):
+    def __init__(self, gain=0xfffff, shift=0xffff):
 
         self.bitcode = 'adc5g_800mhz_qbs_4inbb_2017_May_26_1449.bof.gz'
         self.clk = 1600
         self.bandwidth = 800
         self.ADCstreams = 8
         self.numchannels = 2048
-        self.gain = 0xffffff
-        self.shift = 0xffff
+        self.gain = gain
+        self.shift = shift
 
         self.sync_LCM = 10
         self.pfb_taps = 4

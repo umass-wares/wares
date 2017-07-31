@@ -10,6 +10,7 @@ import numpy
 #from lmtnetcdf import LMTNetCDFFile
 import netCDF4
 import os
+import time
 
 dimensions = {
     #'Header.Mode.Bitcode': ('Header.Mode.Bitcode_slen', 100),
@@ -59,6 +60,9 @@ variables = {
     'Data.Integrate.read_time': (numpy.dtype('float'), ('time', ),
                                  {'long_name': 'Read time',
                                   'units': 'seconds'}),
+    'Data.Integrate.time': (numpy.dtype('float'), ('time', ),
+                                 {'long_name': 'Epoch time',
+                                  }),
     }
 
 header_variables = {
@@ -167,6 +171,7 @@ class WaresNetCDFFile(LMTNetCDFFile):
         self.nc.variables['Data.Integrate.sync_scale'][self.data_index] = specobj.sync_scale
         self.nc.variables['Data.Integrate.sync_period'][self.data_index] = specobj.sync_period
         self.nc.variables['Data.Integrate.sync_time'][self.data_index] = specobj.sync_time
+        self.nc.variables['Data.Integrate.time'][self.data_index] = time.time()
         self.data_index += 1
         
     def setup_scan(self, specobj, inp):

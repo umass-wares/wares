@@ -12,7 +12,8 @@ import datetime
 class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
                  default_ogp_file='ogp_data/ogp_chans01.npz',
-                 default_inl_file='ogp_data/inl_chans01.npz'):
+                 default_inl_file='ogp_data/inl_chans01.npz',
+                 gain=None):
 
         self.default_ogp_file = default_ogp_file
         self.default_inl_file = default_inl_file        
@@ -31,7 +32,10 @@ class Spectrometer(object):
         self.inputs = {}  # a dictionary of spectral classes
         
         if (mode==800):
-            self.mode = mode_800()
+            if gain is not None:
+                self.mode = mode_800(gain=gain)
+            else:
+                self.mode = mode_800()
 
         if (mode==400):
             self.mode = mode_400()
@@ -166,7 +170,8 @@ class Spectrometer(object):
 
     def close_scan(self):
         self.nc.close_scan()
-
+        self.nc = None
+        
     def snap(self, inp, hist=True):
                                                                                                                                      
         raw = adc5g.get_snapshot(self.roach, 'snap%i' %(inp))
