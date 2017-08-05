@@ -32,16 +32,17 @@ def allan_analysis(filename, startscan=0, numscans=5000,
     rmsvals = load_allan_scans(filename, startscan=startscan,
                                numscans=numscans, inputpix=inputpix)
     nscans, nchans = rmsvals.shape
-    Nout = numscans - startscan + 1
+    Nout = numscans
     if max_allan is not None:
         maxk = max_allan
     else:
         maxk = Nout/4
-    print maxk
+    #print maxk
     alanvar = []
+    #for k in range(1, maxk+1):
     for k in range(1, maxk+1):
         M = Nout/k
-        print M
+        print " M = ", M
         for n in range(M):
             tmpR = rmsvals[(n*k):(n+1)*k, :].sum(axis=0)/k
             if n == 0:
@@ -52,7 +53,7 @@ def allan_analysis(filename, startscan=0, numscans=5000,
         sigmak = 0.0
         avgspec = numpy.zeros((nchans,), dtype='float')
         for n in range(M-1):
-            spec = (R[:, n+1] - R[:, n])/R[:, n+1]
+            spec = (R[:, n] - R[:, n+1])/R[:, n+1]
             avgspec += spec
             if type(indices) == numpy.ndarray and indices.any():
                 #print "indices"

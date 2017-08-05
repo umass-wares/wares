@@ -13,7 +13,7 @@ class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
                  default_ogp_file='ogp_data/ogp_chans01.npz',
                  default_inl_file='ogp_data/inl_chans01.npz',
-                 gain=None):
+                 gain=None, basefile='spectrometer'):
 
         self.default_ogp_file = default_ogp_file
         self.default_inl_file = default_inl_file        
@@ -52,6 +52,7 @@ class Spectrometer(object):
         self.configure()
         self.calADC()
         self.nc = None
+        self.basefile = basefile
 
         
     def calc_sync_period(self, scale):
@@ -159,7 +160,7 @@ class Spectrometer(object):
                                                    interleave)
         if write_nc:
             if self.nc is None:
-                filename ="spectrometer_%s.nc" % (datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+                filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
                 self.nc = WaresNetCDFFile(filename, 'w')
                 self.nc.setup_scan(self, inp)
                 
@@ -179,7 +180,11 @@ class Spectrometer(object):
         if hist:
                 self.adc_cal_tools.levels_hist(raw)
 
-        return raw
+        return np.array(raw)
+
+    def snap_file(self, inp, filename, hist=True):
+        raw = self.snap(inp, hist=hist)
+        np.savetxt(filename, raw)
 
     def snap_bad(self, hist=True):
 
