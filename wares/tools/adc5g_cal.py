@@ -1,7 +1,7 @@
 
 from corr import katcp_wrapper
 import adc5g
-#from hp8780a import HP8780A
+from hp8780a import HP8780A
 import time
 import datetime
 import numpy as np
@@ -60,7 +60,7 @@ class ADC5g_Calibration_Tools ():
 	    self.clk = clk
 	    self.freqs_cores = np.linspace(100,clk/4,6,endpoint=False)
 	    self.freqs_bw = np.arange(50,clk/2,25)
-	    self.syn = None
+	    self.syn = HP8780A('8780a')
 	    self.roach = roach
 
 	    if program:
@@ -128,16 +128,16 @@ class ADC5g_Calibration_Tools ():
 	   of frequency 'freq' (MHz)
 	"""
 
-#	if freq != None:
+	if freq != None:
 
 #		self.syn.output_on()
-#		self.syn.set_freq(freq*1e6)
-#		time.sleep(1)
+		self.syn.set_freq(freq*1e6)
+		time.sleep(1)
 
-	reg = self.get_channel_snap_reg(chan)
-	raw = array(adc5g.get_snapshot(self.roach, reg))
+#	reg = self.get_channel_snap_reg(chan)
+	raw = array(adc5g.get_snapshot(self.roach, 'snap%i' %(chan))
 
-	return raw, freq
+	return raw
 
 
     def fit_snap(self, raw, freq): 
@@ -209,21 +209,21 @@ class ADC5g_Calibration_Tools ():
 	del_phi = 2*math.pi*freq/self.clk
 
 	x  = [del_phi*i for i in range(len(raw))]
-	p0 = [128.,90.,90.]
+	p0 = [128.,90.,90.] #initial values to start fit [offset,sin, cos]
         
-	params0 = curve_fit(syn_func, x , raw  , p0)
+	params0 = curve_fit(syn_func, x , raw  , p0) #fit values using 3-parameter fit according to IEEE std.2010
 
 	off = params0[0][0]
 	sin0a = params0[0][1]
 	cos0a = params0[0][2]
 	amp0 = math.sqrt(sin0a**2 + cos0a**2)
        
-	fit0 = syn_func(x, off, sin0a, cos0a)
+	fit0 = syn_func(x, off, sin0a, cos0a) # calculates fit values.
 	ssq0 = 0.0
 	data_cnt = len(raw)
 
 	for i in range (data_cnt):
-		ssq0 += (raw[i]-fit0[i])**2
+		ssq0 += (raw[i]-fit0[i])**2 
 
 	pwr_sinad = (amp0**2) / (2*ssq0/data_cnt)
 	sinad = 10.0 * math.log10(pwr_sinad)
@@ -320,7 +320,7 @@ class ADC5g_Calibration_Tools ():
         
         	for i in range(len(freqs)): # MHz
         		freq = freqs[i]
-        		raw, f = self.get_snap(chan, freq)
+        		raw = self.get_snap(chan, freq)
         		sfdr_chan[freq], sinad_psd_chan[freq] = self.do_sfdr(raw,freq)
           
         	multi_sfdr.append(sfdr_chan)
