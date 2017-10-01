@@ -7,7 +7,9 @@ from corr import katcp_wrapper
 from wares.spectrometer.spectrometer_modes import mode_800, mode_400, mode_200
 from wares.spectrometer.spectrometer_integration import SpectrometerIntegration
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
+from wares.utils.process_stopper import ProcessStopper
 import datetime
+import multiprocessing
 
 class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
@@ -63,7 +65,7 @@ class Spectrometer(object):
     def set_sync_period(self):
     
         self.sync_period = self.calc_sync_period(self.sync_scale)
-        self.sync_time = self.sync_period/(self.mode.clk/self.mode.ADCstreams)
+        self.sync_time = self.sync_period/((self.mode.clk*1e6)/self.mode.ADCstreams)
     
     def set_acc_len(self):
 
@@ -130,7 +132,42 @@ class Spectrometer(object):
                                      dtype='float')
 
         return bram_array
-    
+
+    def read_bram_par(self, inp, bramNo):
+        print "Inp: %d, bramNo: %d" % (inp, bramNo)
+        self.interleave[bramNo::self.mode.nbram] = np.array(struct.unpack('>%dl' %(self.mode.numchannels/self.mode.nbram),
+                                     self.roach.read('bram%i%i' %(inp,bramNo),
+                                     4.*(self.mode.numchannels/self.mode.nbram), 0)),
+                                     dtype='float')
+
+    def integrate_by_input(self, inp):
+        print "Integrating on input %d" % inp
+        t1 = time.time()
+        acc_n = self.get_acc_n()
+        sync_n = self.get_sync_cnt()
+
+        interleave = np.empty((self.mode.numchannels,), dtype=float)
+
+        for bramNo in range(self.mode.nbram):
+
+            interleave[bramNo::self.mode.nbram] = self.read_bram(inp, bramNo)
+
+        read_time = time.time() - t1
+
+        print 'Done with integration'
+        print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+
+        self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
+                                                   acc_n, sync_n, read_time,
+                                                   interleave)
+        if self.nc is None:
+            filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+            self.nc = WaresNetCDFFile(filename, 'w')
+            self.nc.setup_scan(self, inp)
+                
+        self.nc.save_scan(self, inp)
+
+        
 
     def integrate(self, inp, plt=True, write_nc=True):
 
@@ -169,6 +206,60 @@ class Spectrometer(object):
             
         return acc_n, sync_n, interleave, read_time
 
+    def integrate_all_inputs(self):
+        for input in range(4):
+            process = multiprocessing.Process(target=self.integrate_by_input, args=(input,))
+            process.start()
+            time.sleep(0.001)
+
+    def integrate_par(self, inp, plt=True, write_nc=True):
+
+        t1 = time.time()
+
+        acc_n = self.get_acc_n()
+        sync_n = self.get_sync_cnt()
+
+        self.interleave = np.empty((self.mode.numchannels,), dtype=float)
+        ncpu = multiprocessing.cpu_count()
+        
+        #self.pstop = ProcessStopper()
+        self.process = {}
+        for bramNo in range(self.mode.nbram):
+            self.process[bramNo] = multiprocessing.Process(target=self.read_bram_par, args=(inp, bramNo))
+            self.process[bramNo].start()
+            #self.pstop.add_process(process)
+            time.sleep(0.001)
+            #interleave[bramNo::self.mode.nbram] = self.read_bram(inp, bramNo)
+
+        
+        read_time = time.time() - t1
+        print 'Done with integration'
+        print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+
+        if plt:
+                plot(10.*np.log10(self.interleave[10:]))
+                xlabel('FFT Channel')
+                ylabel('dB')
+
+        self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
+                                                   acc_n, sync_n, read_time,
+                                                   self.interleave)
+        if write_nc:
+            if self.nc is None:
+                filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+                self.nc = WaresNetCDFFile(filename, 'w')
+                self.nc.setup_scan(self, inp)
+                
+            self.nc.save_scan(self, inp)
+            #nc.close_scan()
+        # while self.pstop.keep_running:
+        #     try:
+        #         time.sleep(1)
+        #     except KeyboardInterrupt:
+        #         self.pstop.terminate()
+        #         break
+        return acc_n, sync_n, self.interleave, read_time
+    
     def close_scan(self):
         self.nc.close_scan()
         self.nc = None
