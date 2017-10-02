@@ -180,9 +180,9 @@ class Spectrometer(object):
 
         acc_n = self.get_acc_n()
         # test code here
-        while len(self.spec_dumps) > 0 and acc_n - self.spec_dumps[-1].acc_n == 0:
-            time.sleep(0.001)
-            acc_n = self.get_acc_n()
+        # while len(self.spec_dumps) > 0 and acc_n - self.spec_dumps[-1].acc_n == 0:
+        #     time.sleep(0.001)
+        #     acc_n = self.get_acc_n()
         # test code finish
         sync_n = self.get_sync_cnt()
 
