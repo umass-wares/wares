@@ -161,12 +161,17 @@ class Spectrometer(object):
                                                    acc_n, sync_n, read_time,
                                                    interleave)
         if self.nc is None:
-            filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
-            self.nc = WaresNetCDFFile(filename, 'w')
-            self.nc.setup_scan(self, inp)
-                
+            #filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+            #self.nc = WaresNetCDFFile(filename, 'w')
+            #self.nc.setup_scan(self, inp)
+            self.open_nc_file()    
         self.nc.save_scan(self, inp)
 
+    def open_nc_file(self):
+        filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+        self.nc = WaresNetCDFFile(filename, 'w')
+        self.nc.setup_scan(self)
+        
         
 
     def integrate(self, inp, plt=True, write_nc=True):
@@ -198,9 +203,10 @@ class Spectrometer(object):
         self.spec_dumps.append(self.inputs[inp])
         if write_nc:
             if self.nc is None:
-                filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
-                self.nc = WaresNetCDFFile(filename, 'w')
-                self.nc.setup_scan(self, inp)
+                self.open_nc_file()
+                #filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+                #self.nc = WaresNetCDFFile(filename, 'w')
+                #self.nc.setup_scan(self, inp)
                 
             self.nc.save_scan(self, inp)
             #nc.close_scan()
@@ -247,10 +253,7 @@ class Spectrometer(object):
                                                    self.interleave)
         if write_nc:
             if self.nc is None:
-                filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
-                self.nc = WaresNetCDFFile(filename, 'w')
-                self.nc.setup_scan(self, inp)
-                
+                self.open_nc_file()
             self.nc.save_scan(self, inp)
             #nc.close_scan()
         # while self.pstop.keep_running:

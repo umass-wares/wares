@@ -174,7 +174,7 @@ class WaresNetCDFFile(LMTNetCDFFile):
         self.nc.variables['Data.Integrate.time'][self.data_index] = time.time()
         self.data_index += 1
         
-    def setup_scan(self, specobj, inp):
+    def setup_scan(self, specobj):
         groupName = "Spectrometer"
         self.nc.createGroup(groupName)
         self.create_dimensions(specobj)
