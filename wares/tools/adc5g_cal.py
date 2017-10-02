@@ -135,7 +135,7 @@ class ADC5g_Calibration_Tools ():
 		time.sleep(1)
 
 #	reg = self.get_channel_snap_reg(chan)
-	raw = array(adc5g.get_snapshot(self.roach, 'snap%i' %(chan))
+	raw = array(adc5g.get_snapshot(self.roach, 'snap%i' %(chan)))
 
 	return raw
 
