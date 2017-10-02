@@ -1,4 +1,5 @@
 import numpy
+import time
 
 class SpectrometerIntegration(object):
 
@@ -10,3 +11,5 @@ class SpectrometerIntegration(object):
         self.acc_n = acc_n
         self.sync_n = sync_n
         self.read_time = read_time
+        self.time = time.time()
+    

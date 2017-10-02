@@ -32,7 +32,7 @@ class Spectrometer(object):
         self.sync_time = None
         self.acc_len = None
         self.inputs = {}  # a dictionary of spectral classes
-        
+        self.spec_dumps = []  # a list of all spectrometer dumps
         if (mode==800):
             if gain is not None:
                 self.mode = mode_800(gain=gain)
@@ -195,6 +195,7 @@ class Spectrometer(object):
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
                                                    interleave)
+        self.spec_dumps.append(self.inputs[inp])
         if write_nc:
             if self.nc is None:
                 filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
