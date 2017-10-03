@@ -1,6 +1,13 @@
 from .spectrometer import Spectrometer
 import spectrometer_modes as spec_modes
 import time
+import threading
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
+
 
 roach_ips = {
     0: '10.0.0.97',
@@ -36,6 +43,7 @@ class SpectrometerWrapper(object):
         self.spec.mode_setup(mode=mode)
         
     def integrate(self, inputs):
+        logging.debug('Starting ')
         while self.integration_active:
             t1 = time.time()
             for inp in inputs:
@@ -43,18 +51,25 @@ class SpectrometerWrapper(object):
             while time.time() - t1 < self.spec.sync_time:
                 time.sleep(0.001)
         print "Integration halted"
-        
+        logging.debug("Integration Ended")
+    
     def open(self, obs_num, source_name, obspgm):
         self.spec.basefile = "%d_%s" % (obs_num, source_name)
         self.spec.open_nc_file()
 
     def start(self):
         self.integration_active = True
-        self.integrate([0, 1, 2, 3])
+        # needs to be a threaded integrate below
+        self.integrate_thread = threading.Thread(name="integrate daemon",
+                                                 target=self.integrate, args=([0,1,2,3],))
+        self.integrate_thread.setDaemon(True)
+        self.integrate_thread.start()
+        #self.integrate([0, 1, 2, 3])
 
     def stop(self):
         self.integration_active = False
-
+        self.integrate_thread.join()
+    
     def close(self):
         self.spec.save_all_scans()
         self.spec.close_scan()
