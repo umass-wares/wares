@@ -32,7 +32,7 @@ class SpectrometerWrapper(object):
         mode_fn = getattr(spec_modes, 'mode_%d' % mode)
         mode_obj = mode_fn()
         scale = self.calc_scale(dump_time, mode_obj)
-        self.spec.scale = scale
+        self.spec.sync_scale = scale
         self.spec.mode_setup(mode=mode)
         
     def integrate(self, inputs):
