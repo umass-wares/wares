@@ -43,7 +43,8 @@ class SpectrometerWrapper(object):
         self.spec.mode_setup(mode=mode)
         
     def integrate(self, inputs):
-        logging.debug('Starting ')
+        #logging.debug('Starting ')
+        print "Starting"
         while self.integration_active:
             t1 = time.time()
             for inp in inputs:
@@ -51,7 +52,6 @@ class SpectrometerWrapper(object):
             #while time.time() - t1 < self.spec.sync_time:
             #    time.sleep(0.001)
         print "Integration halted"
-        logging.debug("Integration Ended")
     
     def open(self, obs_num, source_name, obspgm):
         self.spec.basefile = "%d_%s" % (obs_num, source_name)
