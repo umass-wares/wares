@@ -2,11 +2,11 @@ from .spectrometer import Spectrometer
 import spectrometer_modes as spec_modes
 import time
 import threading
-import logging
+#import logging
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='(%(threadName)-10s) %(message)s',
-                    )
+#logging.basicConfig(level=logging.DEBUG,
+#                    format='(%(threadName)-10s) %(message)s',
+#                    )
 
 
 roach_ips = {
@@ -48,8 +48,8 @@ class SpectrometerWrapper(object):
             t1 = time.time()
             for inp in inputs:
                 self.spec.integrate(inp, plt=False, write_nc=False)
-            while time.time() - t1 < self.spec.sync_time:
-                time.sleep(0.001)
+            #while time.time() - t1 < self.spec.sync_time:
+            #    time.sleep(0.001)
         print "Integration halted"
         logging.debug("Integration Ended")
     
