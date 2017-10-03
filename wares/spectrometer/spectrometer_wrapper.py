@@ -1,4 +1,5 @@
 from .spectrometer import Spectrometer
+from wares.utils.valon_synth import Synthesizer as ValonSynthesizer, SYNTH_A, SYNTH_B
 import spectrometer_modes as spec_modes
 import time
 import threading
@@ -14,6 +15,12 @@ roach_ips = {
     1: '10.0.0.98',
     2: '10.0.0.99',
     3: '10.0.0.100'
+    }
+
+synth_freq = {
+    800: 1600,
+    400: 800,
+    200: 800
     }
 
 class SpectrometerWrapper(object):
@@ -36,6 +43,10 @@ class SpectrometerWrapper(object):
         return scale        
         
     def config(self, mode=800, dump_time=0.05):
+        valon = ValonSynthesizer('/dev/ttyUSB0')
+        print "Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A)
+        valon.set_frequency(SYNTH_A, synth_freq[mode])
+        print "Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A)
         mode_fn = getattr(spec_modes, 'mode_%d' % mode)
         mode_obj = mode_fn()
         scale = self.calc_scale(dump_time, mode_obj)
