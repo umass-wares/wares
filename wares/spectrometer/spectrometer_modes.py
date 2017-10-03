@@ -18,15 +18,15 @@ class mode_800(object):
 
 class mode_400(object):
 
-    def __init__(self):
+    def __init__(self, gain=0xfffff, shift=0xffff):
 
         self.bitcode = 'adc5g_400mhz_qbs_4in_2017_May_16_1346.bof.gz'
         self.clk = 800
         self.bandwidth = 400
         self.ADCstreams = 8
         self.numchannels = 4096
-        self.gain = 0xffffff
-        self.shift = 0xffff
+        self.gain = gain
+        self.shift = shift
         
         self.sync_LCM = 10
         self.pfb_taps = 4
@@ -36,15 +36,15 @@ class mode_400(object):
 
 class mode_200(object):
 
-    def __init__(self):
+    def __init__(self, gain=0xfffff, shift=0xffff):
 
         self.bitcode = 'adc5g_200mhz_qbs_4in_2017_May_22_1352.bof.gz'
         self.clk = 800
         self.bandwidth = 200
         self.ADCstreams = 4
         self.numchannels = 8192
-        self.gain = 0xffffff
-        self.shift = 0xffff
+        self.gain = gain
+        self.shift = shift
 
         self.sync_LCM = 12
         self.pfb_taps = 4

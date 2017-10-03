@@ -22,10 +22,10 @@ class Spectrometer(object):
         self.roach_id = roach_id
         self.katcp_port = katcp_port 
 
-        roach = katcp_wrapper.FpgaClient(roach_id)
-        roach.wait_connected()
+        self.roach = katcp_wrapper.FpgaClient(roach_id)
+        self.roach.wait_connected()
 
-        self.roach = roach
+        #self.roach = roach
 
         self.sync_scale = scale
         self.sync_period = None
@@ -33,17 +33,55 @@ class Spectrometer(object):
         self.acc_len = None
         self.inputs = {}  # a dictionary of spectral classes
         self.spec_dumps = []  # a list of all spectrometer dumps
+        self.gain = gain
+        # if (mode==800):
+        #     if gain is not None:
+        #         self.mode = mode_800(gain=gain)
+        #     else:
+        #         self.mode = mode_800()
+
+        # if (mode==400):
+        #     if gain is not None:
+        #         self.mode = mode_400(gain=gain)
+        #     else:
+        #         self.mode = mode_400()
+
+        # if (mode==200):
+        #     if gain is not None:
+        #         self.mode = mode_200(gain=gain)
+        #     else:
+        #         self.mode = mode_200()
+
+        # self.adc_cal_tools = ADC5g_Calibration_Tools(self.roach, program=False)
+
+        # self.set_sync_period()
+        # self.set_acc_len()
+
+        # self.program_device()
+        # self.configure()
+        # self.calADC()
+        self.mode_setup(mode=mode)
+        self.nc = None
+        self.basefile = basefile
+
+    def mode_setup(self, mode=800):
         if (mode==800):
-            if gain is not None:
-                self.mode = mode_800(gain=gain)
+            if self.gain is not None:
+                self.mode = mode_800(gain=self.gain)
             else:
                 self.mode = mode_800()
 
         if (mode==400):
-            self.mode = mode_400()
+            if self.gain is not None:
+                self.mode = mode_400(gain=self.gain)
+            else:
+                self.mode = mode_400()
 
         if (mode==200):
-            self.mode = mode_200()
+            if gain is not None:
+                self.mode = mode_200(gain=self.gain)
+            else:
+                self.mode = mode_200()
 
         self.adc_cal_tools = ADC5g_Calibration_Tools(self.roach, program=False)
 
@@ -53,9 +91,7 @@ class Spectrometer(object):
         self.program_device()
         self.configure()
         self.calADC()
-        self.nc = None
-        self.basefile = basefile
-
+        
         
     def calc_sync_period(self, scale):
 
@@ -71,7 +107,14 @@ class Spectrometer(object):
 
         self.acc_len = self.sync_period/(self.mode.numchannels/self.mode.nbram)
 
-
+    def calc_scale(self, dump_time):
+        """
+        Given dump time in seconds, calculates scale as nearest integer
+        """
+        sync_period = dump_time * (self.mode.clk*1e6)/self.mode.ADCstreams
+        scale = int((sync_period + 2) * self.mode.FFTinputs/(self.mode.sync_LCM*self.mode.pfb_taps*self.mode.FFTsize))
+        return scale
+        
     def program_device(self):
 
         bitcode = self.mode.bitcode
@@ -269,6 +312,10 @@ class Spectrometer(object):
         #         break
         return acc_n, sync_n, self.interleave, read_time
     
+    def save_all_scans(self):
+        if self.nc is not None:
+            self.nc.save_all_scans(self)
+
     def close_scan(self):
         self.nc.close_scan()
         self.nc = None
