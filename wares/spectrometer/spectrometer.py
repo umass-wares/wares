@@ -78,7 +78,7 @@ class Spectrometer(object):
                 self.mode = mode_400()
 
         if (mode==200):
-            if gain is not None:
+            if self.gain is not None:
                 self.mode = mode_200(gain=self.gain)
             else:
                 self.mode = mode_200()
