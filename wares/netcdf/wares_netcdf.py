@@ -55,7 +55,7 @@ variables = {
                                   {'long_name': 'Sync Scale'}),
     'Data.Integrate.sync_period': (numpy.dtype(int), ('time', ),
                                   {'long_name': 'Sync Period'}),
-    'Data.Integrate.sync_time': (numpy.dtype(int), ('time', ),
+    'Data.Integrate.sync_time': (numpy.dtype('float'), ('time', ),
                                   {'long_name': 'Sync Time'}),    
     'Data.Integrate.read_time': (numpy.dtype('float'), ('time', ),
                                  {'long_name': 'Read time',
