@@ -10,6 +10,7 @@ from wares.netcdf.wares_netcdf import WaresNetCDFFile
 from wares.utils.process_stopper import ProcessStopper
 import datetime
 import multiprocessing
+import Queue
 
 class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
@@ -215,9 +216,10 @@ class Spectrometer(object):
         self.nc = WaresNetCDFFile(filename, 'w')
         self.nc.setup_scan(self)
         
-        
+    def start_queue(self, numdumps=500):
+        self.queue = Queue.Queue(numdumps)
 
-    def integrate(self, inp, plt=True, write_nc=True):
+    def integrate(self, inp, plt=True, write_nc=True, queue_enable=True):
 
         t1 = time.time()
 
@@ -249,6 +251,8 @@ class Spectrometer(object):
                                                    acc_n, sync_n, read_time,
                                                    interleave)
         self.spec_dumps.append(self.inputs[inp])
+        if queue_enable and self.queue:
+            self.queue.put(self.inputs[inp])
         if write_nc:
             if self.nc is None:
                 self.open_nc_file()

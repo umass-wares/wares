@@ -23,6 +23,25 @@ synth_freq = {
     200: 800
     }
 
+class ConsumerWriterThread(threading.Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None, verbose=None):
+	super(ConsumerWriterThread,self).__init__(group=group, target=target, 
+			              name=name, verbose=verbose)
+	self.args = args
+        self.spec = args[0]
+	self.kwargs = kwargs
+	return
+
+    def run(self):
+	#logging.debug('running with %s and %s', self.args, self.kwargs)
+        while True:
+            if not self.spec.queue.empty():
+                specdata = self.spec.queue.get()
+                self.spec.nc.save_single_scan(self.spec, specdata)
+                print "Save data to NC file"
+	return
+    
 class SpectrometerWrapper(object):
     def __init__(self, roach_id=0, katcp_port=7147,
                  default_ogp_file='ogp_data/ogp_chans01.npz',
@@ -78,6 +97,8 @@ class SpectrometerWrapper(object):
                                                  target=self.integrate, args=([0,1,2,3],))
         self.integrate_thread.setDaemon(True)
         self.integrate_thread.start()
+        self.consumer_thread = ConsumerWriterThread(args=(self.spec, ))
+        self.consumer_thread.start()
         #self.integrate([0, 1, 2, 3])
 
     def stop(self):

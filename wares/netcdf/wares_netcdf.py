@@ -184,6 +184,18 @@ class WaresNetCDFFile(LMTNetCDFFile):
     def save_scan(self, specobj, inp):
         self.create_data(specobj, inp)
 
+    def save_single_scan(self, specobj, specdata):
+        self.nc.variables['Data.Integrate.Inputs'][self.data_index] = specdata.inp
+        self.nc.variables['Data.Integrate.acc_n'][self.data_index] = specdata.acc_n
+        self.nc.variables['Data.Integrate.sync_n'][self.data_index] = specdata.sync_n
+        self.nc.variables['Data.Integrate.read_time'][self.data_index] = specdata.read_time
+        self.nc.variables['Data.Integrate.Data'][self.data_index, :] = specdata.data
+        self.nc.variables['Data.Integrate.sync_scale'][self.data_index] = specobj.sync_scale
+        self.nc.variables['Data.Integrate.sync_period'][self.data_index] = specobj.sync_period
+        self.nc.variables['Data.Integrate.sync_time'][self.data_index] = specobj.sync_time
+        self.nc.variables['Data.Integrate.time'][self.data_index] = specdata.time
+        self.data_index += 1
+            
     def save_all_scans(self, specobj):
         specdatas = specobj.spec_dumps
         self.data_index = 0
