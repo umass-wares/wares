@@ -104,6 +104,7 @@ class SpectrometerWrapper(object):
     def stop(self):
         self.integration_active = False
         self.integrate_thread.join()
+        self.consumer_thread.join()
     
     def close(self):
         self.spec.save_all_scans()
