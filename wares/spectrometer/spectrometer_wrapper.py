@@ -110,7 +110,7 @@ class SpectrometerWrapper(object):
         self.integrate_thread.join()
     
     def close(self):
-        self.spec.save_all_scans()
+        #self.spec.save_all_scans()
         self.spec.close_scan()
 
 

@@ -218,7 +218,8 @@ class Spectrometer(object):
         
     def start_queue(self, numdumps=500):
         self.queue = Queue.Queue(numdumps)
-
+        self.numscans = 0
+        
     def integrate(self, inp, plt=True, write_nc=True, queue_enable=True):
 
         t1 = time.time()
@@ -250,9 +251,11 @@ class Spectrometer(object):
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
                                                    interleave)
-        self.spec_dumps.append(self.inputs[inp])
+        if not queue_enable:
+            self.spec_dumps.append(self.inputs[inp])
         if queue_enable and self.queue:
             self.queue.put(self.inputs[inp])
+            self.numscans += 1
         if write_nc:
             if self.nc is None:
                 self.open_nc_file()
