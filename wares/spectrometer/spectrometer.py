@@ -211,7 +211,10 @@ class Spectrometer(object):
             self.open_nc_file()    
         self.nc.save_scan(self, inp)
 
-    def open_nc_file(self):
+    def open_nc_file(self, obs_num=None, source_name=None, obspgm=None):
+        self.obs_num, self.source_name, self.obspgm = obs_num, source_name, obspgm
+        if self.obs_num is not None and self.source_name is not None:
+            self.basefile = "%d_%s" % (obs_num, source_name)
         filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
         self.nc = WaresNetCDFFile(filename, 'w')
         self.nc.setup_scan(self)

@@ -45,6 +45,8 @@ variables = {
                             {'long_name': 'Number of FFT Inputs'}),
     'Header.Mode.nbram': (numpy.dtype('int32'), (), 
                             {'long_name': 'Number of BRAMs in design'}),
+    'Header.Telescope.obs_num': (numpy.dtype('int64'), (),
+                                 {'long_name': 'Observation Number'}),
     'Data.Integrate.Inputs': (numpy.dtype('int'), ('time', ),
                               {'long_name': 'Array of Inputs to spectrometer'}),
     'Data.Integrate.acc_n': (numpy.dtype(int), ('time', ),
@@ -67,6 +69,9 @@ variables = {
 
 header_variables = {
     'Header.Mode.Bitcode': 'bitcode',
+    'Header.Telescope.source_name': 'source_name',
+    'Header.Telescope.obs_num': 'obs_num',
+    'Header.Telescope.obspgm': 'obspgm',
     'Header.Mode.Clock': 'clk',
     'Header.Mode.Bandwidth': 'bandwidth',
     'Header.Mode.ADCStreams': 'ADCstreams',
@@ -140,6 +145,12 @@ class WaresNetCDFFile(LMTNetCDFFile):
         for (dimname, dimlen) in dimensions.values():
             self.nc.createDimension(dimname, dimlen)
         self.nc.createDimension('Header.Mode.Bitcode_slen', len(specobj.mode.bitcode))
+        if specobj.source_name is None:
+            specobj.source_name = 'None'
+        self.nc.createDimension('Header.Telescope.source_name_slen', len(specobj.source_name))
+        if specobj.obspgm is None:
+            specobj.obspgm = 'None'
+        self.nc.createDimension('Header.Telescope.obspgm_slen', len(specobj.obspgm)) 
         self.nc.createDimension('numchannels', specobj.mode.numchannels)
         
     def create_variables(self, specobj):
@@ -149,6 +160,8 @@ class WaresNetCDFFile(LMTNetCDFFile):
                 var.setncattr(attrname, attrval)
         #var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S%d' % len(specobj.mode.bitcode)), ('Header.Mode.Bitcode_slen', ))
         var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S1'), ('Header.Mode.Bitcode_slen', ))
+        var = self.nc.createVariable('Header.Telescope.source_name', numpy.dtype('S1'), ('Header.Telescope.source_name_slen', ))
+        var = self.nc.createVariable('Header.Telescope.obspgm', numpy.dtype('S1'), ('Header.Telescope.obspgm_slen', ))        
         var = self.nc.createVariable('Data.Integrate.Data', numpy.dtype('float'), ('time', 'numchannels'))
         var.setncattr('long_name', 'Spectrum')
         

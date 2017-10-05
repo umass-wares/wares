@@ -90,8 +90,8 @@ class SpectrometerWrapper(object):
         self.spec.queue.put(None)  # to mark end of data
         
     def open(self, obs_num, source_name, obspgm):
-        self.spec.basefile = "%d_%s" % (obs_num, source_name)
-        self.spec.open_nc_file()
+        #self.spec.basefile = "%d_%s" % (obs_num, source_name)
+        self.spec.open_nc_file(obs_num, source_name, obspgm)
 
     def start(self):
         self.integration_active = True
