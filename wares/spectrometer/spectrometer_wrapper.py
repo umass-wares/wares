@@ -36,10 +36,12 @@ class ConsumerWriterThread(threading.Thread):
     def run(self):
 	#logging.debug('running with %s and %s', self.args, self.kwargs)
         while True:
-            if not self.spec.queue.empty():
-                specdata = self.spec.queue.get()
-                self.spec.nc.save_single_scan(self.spec, specdata)
-                print "Save data to NC file"
+            specdata = self.spec.queue.get()
+            if specdata is None:
+                break
+            self.spec.nc.save_single_scan(self.spec, specdata)
+            print "Save data to NC file"
+            self.spec.queue.task_done()
 	return
     
 class SpectrometerWrapper(object):
@@ -85,7 +87,8 @@ class SpectrometerWrapper(object):
             #while time.time() - t1 < self.spec.sync_time:
             #    time.sleep(0.001)
         print "Integration halted"
-    
+        self.spec.queue.put(None)  # to mark end of data
+        
     def open(self, obs_num, source_name, obspgm):
         self.spec.basefile = "%d_%s" % (obs_num, source_name)
         self.spec.open_nc_file()
