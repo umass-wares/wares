@@ -173,10 +173,10 @@ class WaresNetCDFFile(LMTNetCDFFile):
                 self.nc.variables['Header.Mode.Bitcode'][:len(bcode)] = netCDF4.stringtochar(numpy.array([bcode]))
             elif varname == 'Header.Telescope.source_name':
                 sname = specobj.source_name
-                self.nc.variables['Header.Telescope.source_name'][:len(sname)] = netCDF4.stringtochar(numpy.arrag([sname]))
+                self.nc.variables['Header.Telescope.source_name'][:len(sname)] = netCDF4.stringtochar(numpy.array([sname]))
             elif varname == 'Header.Telescope.obspgm':
                 obspgm = specobj.obspgm
-                self.nc.variables['Header.Telescope.obspgm'][:len(obspgm)] = netCDF4.stringtochar(numpy.arrag([obspgm]))
+                self.nc.variables['Header.Telescope.obspgm'][:len(obspgm)] = netCDF4.stringtochar(numpy.array([obspgm]))
             elif varname == 'Header.Telescope.obs_num':
                 self.nc.variables[varname][:] = getattr(specobj, attrname)
             else:
