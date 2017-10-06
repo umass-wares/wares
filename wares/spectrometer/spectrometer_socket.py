@@ -20,20 +20,20 @@ from .spectrometer_wrapper import SpectrometerWrapper
 #msgtype = {syslog.LOG_INFO: 'LOG_INFO',
 #           syslog.LOG_ERR: 'LOG_ERR'
 #}
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(name)s: %(message)s',
-                    )
+#logging.basicConfig(level=logging.DEBUG,
+#                   format='%(name)s: %(message)s',
+#                   )
 
 class SpecTCPHandler(SocketServer.BaseRequestHandler):
     '''Base class for WARES tcpip socket communications'''
     def __init__(self, request, client_address, server):
-        self.logger = logging.getLogger('SpecRequestHandler')
-        self.logger.debug('__init__')
+        #self.logger = logging.getLogger('SpecRequestHandler')
+        #self.logger.debug('__init__')
         SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
         return
 
     def setup(self):
-        self.logger.debug('setup')
+        #self.logger.debug('setup')
         self.specw = SpectrometerWrapper(default_ogp_file='/home/oper/wares/ogp_data/ogp_chans01.npz',
                                          default_inl_file='/home/oper/wares/ogp_data/inl_chans01.npz')
         return SocketServer.BaseRequestHandler.setup(self)
