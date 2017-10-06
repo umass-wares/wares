@@ -48,7 +48,33 @@ class SpecTCPHandler(SocketServer.BaseRequestHandler):
         msg = self.data.split()
         if not msg[0] in ('open', 'config', 'start', 'stop',  'close'):
             print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
-        return
+        if msg[0] == 'open':
+            self.open(msg[1], msg[2], msg[3])
+        elif msg[0] == 'config':
+            self.config(msg[1], msg[2])
+        elif msg[0] == 'start':
+            self.start()
+        elif msg[0] == 'stop':
+            self.stop()
+        elif msg[0] == 'close':
+            self.close()
+            
+    def config(self, mode, dump_time):
+        self.specw.config(mode=mode, dump_time=dump_time)
+        
+    def open(self, obs_num, source_name, obspgm):
+        self.specw.open(obs_num, source_name, obspgm)
+
+    def start(self):
+        self.specw.start()
+
+    def stop(self):
+        self.specw.stop()
+
+    def close(self):
+        self.specw.close()
+
+    
     
     # debug = 0
     # status_bytes = []
