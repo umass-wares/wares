@@ -25,7 +25,9 @@ from .spectrometer_wrapper import SpectrometerWrapper
 #                    )
 
 class SpecTCPHandler(SocketServer.BaseRequestHandler):
-    '''Base class for WARES tcpip socket communications'''
+    '''Base class for WARES tcpip socket communications.
+    Do not use this use the SpectrometerSocketServer class instead
+    '''
     def __init__(self, request, client_address, server):
         #self.logger = logging.getLogger('SpecRequestHandler')
         #self.logger.debug('__init__')
