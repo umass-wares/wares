@@ -8,19 +8,33 @@ TCP/IP sockets"""
 #import sys
 #import traceback
 import time
+import logging
+
 #import syslog
 
 import SocketServer
+from .spectrometer_wrapper import SpectrometerWrapper
 #LOG_SYSLOG=0
 #LOG_STDOUT=1
 
 #msgtype = {syslog.LOG_INFO: 'LOG_INFO',
 #           syslog.LOG_ERR: 'LOG_ERR'
 #}
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(name)s: %(message)s',
+                    )
 
 class SpecTCPHandler(SocketServer.BaseRequestHandler):
     '''Base class for WARES tcpip socket communications'''
+    def __init__(self, request, client_address, server):
+        self.logger = logging.getLogger('EchoRequestHandler')
+        self.logger.debug('__init__')
+        SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
+        self.specw = SpectrometerWrapper(default_ogp_file='/home/oper/wares/ogp_data/ogp_chans01.npz',
+                                         default_inl_file='/home/oper/wares/ogp_data/inl_chans01.npz')
+        return
 
+    
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
@@ -28,7 +42,10 @@ class SpecTCPHandler(SocketServer.BaseRequestHandler):
         print self.data
         # just send back the same data, but upper-cased
         self.request.sendall(self.data.upper())
-
+        msg = self.data.split()
+        if not msg[0] in ('open', 'config', 'start', 'stop',  'close'):
+            print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
+        return
     
     # debug = 0
     # status_bytes = []
