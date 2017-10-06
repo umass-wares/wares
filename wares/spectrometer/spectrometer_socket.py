@@ -64,7 +64,8 @@ class SpecTCPHandler(SocketServer.BaseRequestHandler):
         
     def open(self, obs_num, source_name, obspgm):
         self.specw.open(obs_num, source_name, obspgm)
-
+        self.specw.spec.start_queue(1000)
+        
     def start(self):
         self.specw.start()
 
