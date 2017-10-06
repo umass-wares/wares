@@ -14,15 +14,15 @@ import logging
 
 import SocketServer
 from .spectrometer_wrapper import SpectrometerWrapper
-#LOG_SYSLOG=0
-#LOG_STDOUT=1
+# LOG_SYSLOG=0
+# LOG_STDOUT=1
 
-#msgtype = {syslog.LOG_INFO: 'LOG_INFO',
-#           syslog.LOG_ERR: 'LOG_ERR'
-#}
-#logging.basicConfig(level=logging.DEBUG,
-#                   format='%(name)s: %(message)s',
-#                   )
+# msgtype = {syslog.LOG_INFO: 'LOG_INFO',
+#            syslog.LOG_ERR: 'LOG_ERR'
+# }
+# logging.basicConfig(level=logging.DEBUG,
+#                    format='%(name)s: %(message)s',
+#                    )
 
 class SpecTCPHandler(SocketServer.BaseRequestHandler):
     '''Base class for WARES tcpip socket communications'''
@@ -81,10 +81,10 @@ class SpectrometerSocketServer():
     status_bytes = []
     status_dict = {}
 
-    def __init__(self, HOST=None, PORT=None, log=LOG_SYSLOG):
-        self.log = log
-        if self.log == LOG_SYSLOG:
-            syslog.openlog('SpectrometerSockServer')
+    def __init__(self, HOST=None, PORT=None):
+        #self.log = log
+        #if self.log == LOG_SYSLOG:
+        #    syslog.openlog('SpectrometerSockServer')
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             if HOST:
@@ -112,16 +112,17 @@ class SpectrometerSocketServer():
         return (excName, excArgs, excTb)
 
     def printlog(self, *arguments):
-        if len(arguments) == 1:
-            type=syslog.LOG_INFO
-            msg = arguments[0]
-        else:
-            type=arguments[0]
-            msg=arguments[1]
-        if self.log == LOG_STDOUT:
-            print msgtype[type], msg
-        else:
-            syslog.syslog(type, msg)
+        # if len(arguments) == 1:
+        #     type=syslog.LOG_INFO
+        #     msg = arguments[0]
+        # else:
+        #     type=arguments[0]
+        #     msg=arguments[1]
+        # if self.log == LOG_STDOUT:
+        #     print msgtype[type], msg
+        # else:
+        #     syslog.syslog(type, msg)
+        print arguments
 
     def listen(self, numconnections=10):
         self.sock.listen(numconnections)
