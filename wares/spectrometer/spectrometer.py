@@ -216,6 +216,7 @@ class Spectrometer(object):
         if self.obs_num is not None and self.source_name is not None:
             self.basefile = "%d_%s" % (obs_num, source_name)
         filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+        print "Opening filename: %s" % filename
         self.nc = WaresNetCDFFile(filename, 'w')
         self.nc.setup_scan(self)
         
