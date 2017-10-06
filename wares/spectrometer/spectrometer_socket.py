@@ -60,10 +60,10 @@ class SpecTCPHandler(SocketServer.BaseRequestHandler):
             self.close()
             
     def config(self, mode, dump_time):
-        self.specw.config(mode=mode, dump_time=dump_time)
+        self.specw.config(mode=int(mode), dump_time=float(dump_time))
         
     def open(self, obs_num, source_name, obspgm):
-        self.specw.open(obs_num, source_name, obspgm)
+        self.specw.open(int(obs_num), source_name, obspgm)
         self.specw.spec.start_queue(1000)
         
     def start(self):
