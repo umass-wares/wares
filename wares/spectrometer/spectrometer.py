@@ -92,7 +92,7 @@ class Spectrometer(object):
         self.program_device()
         self.configure()
         self.calADC()
-        
+        self.start_queue(1000)
         
     def calc_sync_period(self, scale):
 
