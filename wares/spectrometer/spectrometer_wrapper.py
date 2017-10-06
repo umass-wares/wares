@@ -102,6 +102,7 @@ class SpectrometerWrapper(object):
         self.integrate_thread.start()
         self.consumer_thread = ConsumerWriterThread(args=(self.spec, ))
         self.consumer_thread.start()
+        print "Started integrate thread and consumer writer thread"
         #self.integrate([0, 1, 2, 3])
 
     def stop(self):
