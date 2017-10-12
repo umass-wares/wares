@@ -83,7 +83,8 @@ class SpectrometerSocketServer():
     status_bytes = []
     status_dict = {}
 
-    def __init__(self, HOST=None, PORT=None):
+    def __init__(self, HOST=None, PORT=None, roach_id=0,
+                 katcp_port=7147):
         #self.log = log
         #if self.log == LOG_SYSLOG:
         #    syslog.openlog('SpectrometerSockServer')
@@ -97,7 +98,9 @@ class SpectrometerSocketServer():
             self.conn = None
             self.addr = None
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.specw = SpectrometerWrapper(default_ogp_file='/home/oper/wares/ogp_data/ogp_chans01.npz',
+            self.specw = SpectrometerWrapper(roach_id=roach_id,
+                                             katcp_port=katcp_port,
+                                             default_ogp_file='/home/oper/wares/ogp_data/ogp_chans01.npz',
                                              default_inl_file='/home/oper/wares/ogp_data/inl_chans01.npz')            
         except:
             self.printlog(syslog.LOG_ERR, str(self.formatExceptionInfo()))
