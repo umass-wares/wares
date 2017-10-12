@@ -45,7 +45,7 @@ if __name__ == '__main__':
                       action="store", type="int",
                       default=7147,
                       help="KATCP Port on ROACH board (default %default)")
-    parser.add_option('-p', '--pid-file', dest="pidfile", 
+    parser.add_option('-P', '--pid-file', dest="pidfile", 
                       action="store", default='/var/run/spec_daemon.pid',
                       help="pid file location (default %default)")
     (options, args) = parser.parse_args()
