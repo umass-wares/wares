@@ -20,6 +20,7 @@ def start_spectrometer(options):
             break
                                      
 def start_daemon(options):
+    print "Starting Daemon"
     with daemon.DaemonContext(
             pidfile=pidfile.TimeoutPIDLockFile(options.pidfile),
     ) as context:
@@ -49,5 +50,5 @@ if __name__ == '__main__':
                       action="store", default='/var/run/spec_daemon.pid',
                       help="pid file location (default %default)")
     (options, args) = parser.parse_args()
-    
+    start_daemon(options)
     
