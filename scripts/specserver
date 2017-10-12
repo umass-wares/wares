@@ -11,13 +11,15 @@ def start_spectrometer(options):
                                      roach_id=options.roachid,
                                      katcp_port=options.katcp_port)
     print "Waiting for socket connection from client"
-    spec_sock.accept()
+    spec_sock.listen(10)
     while True:
-        if spec_sock.process_spectrometer_command():
-            print "Processed command"
-        else:
-            spec_sock.conn_close()
-            break
+        spec_sock.accept()
+        while True:
+            if spec_sock.process_spectrometer_command():
+                print "Processed command"
+            else:
+                spec_sock.conn_close()
+                break
                                      
 def start_daemon(options):
     print "Starting Daemon"

@@ -103,7 +103,7 @@ class SpectrometerSocketServer():
                                              default_ogp_file='/home/oper/wares/ogp_data/ogp_chans01.npz',
                                              default_inl_file='/home/oper/wares/ogp_data/inl_chans01.npz')            
         except:
-            self.printlog(syslog.LOG_ERR, str(self.formatExceptionInfo()))
+            self.printlog(str(self.formatExceptionInfo()))
             
     def formatExceptionInfo(self, maxTBlevel=5):
         """copied from Linux Journal article 5821"""
