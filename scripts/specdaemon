@@ -17,17 +17,16 @@ def start_spectrometer(options):
         while True:
             if spec_sock.process_spectrometer_command():
                 print "Processed command"
-                print "Ctrl-C to quit"
             else:
                 spec_sock.conn_close()
                 break
                                      
-# def start_daemon(options):
-#     print "Starting Daemon"
-#     with daemon.DaemonContext(
-#             pidfile=pidfile.TimeoutPIDLockFile(options.pidfile),
-#     ) as context:
-#         start_spectometer(options)
+def start_daemon(options):
+    print "Starting Daemon"
+    with daemon.DaemonContext(
+            pidfile=pidfile.TimeoutPIDLockFile(options.pidfile),
+    ) as context:
+        start_spectometer(options)
 
 
 
@@ -53,5 +52,5 @@ if __name__ == '__main__':
                       action="store", default='/var/run/spec_daemon.pid',
                       help="pid file location (default %default)")
     (options, args) = parser.parse_args()
-    start_spectrometer(options)
+    start_daemon(options)
     

@@ -12,7 +12,7 @@ setup(
     description='Python tools for UMass WARES Spectrometer',
     author='Gopal Narayanan <gopal@astro.umass.edu>',
     packages=find_packages(),
-    scripts=['scripts/webstrip.py', 'scripts/specserver'],
+    scripts=['scripts/webstrip.py', 'scripts/specserver', 'scripts/specdaemon'],
     include_package_data=True,
     data_files=datafiles
 )
