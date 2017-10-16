@@ -143,11 +143,11 @@ class SpectrometerSocketServer():
                 data = self.conn.recv(maxlen)
                 return data
             except:
-                self.printlog(syslog.LOG_ERR, "No data")
+                self.printlog("No data")
                 self.conn=None
                 return None
         else:
-            self.printlog(syslog.LOG_ERR,"No connection")
+            self.printlog("No connection")
     
     def process_spectrometer_command(self):
         data = self.recv(1024)
