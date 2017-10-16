@@ -1,6 +1,6 @@
 import numpy as np
 import struct, datetime, time
-#from pylab import plot,xlabel,ylabel
+from pylab import plot,xlabel,ylabel
 from wares import adc5g
 #from wares.tools.adc5g_cal import ADC5g_Calibration_Tools
 from wares.tools.adc5g_ogp_inl_tools import ADC5g_Load
@@ -225,7 +225,7 @@ class Spectrometer(object):
         self.queue = Queue.Queue(numdumps)
         self.numscans = 0
         
-    def integrate(self, inp, write_nc=True, queue_enable=True):
+    def integrate(self, inp, plt=True, write_nc=True, queue_enable=True):
 
         t1 = time.time()
 
@@ -248,10 +248,10 @@ class Spectrometer(object):
         print 'Done with integration'
         print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
 
-        #if plt:
-        #        plot(10.*np.log10(interleave[10:]))
-        #        xlabel('FFT Channel')
-        #        ylabel('dB')
+        if plt:
+                plot(10.*np.log10(interleave[10:]))
+                xlabel('FFT Channel')
+                ylabel('dB')
 
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
@@ -279,7 +279,7 @@ class Spectrometer(object):
             process.start()
             time.sleep(0.001)
 
-    def integrate_par(self, inp, write_nc=True):
+    def integrate_par(self, inp, plt=True, write_nc=True):
 
         t1 = time.time()
 
@@ -303,10 +303,10 @@ class Spectrometer(object):
         print 'Done with integration'
         print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
 
-        #if plt:
-        #        plot(10.*np.log10(self.interleave[10:]))
-        #        xlabel('FFT Channel')
-        #        ylabel('dB')
+        if plt:
+                plot(10.*np.log10(self.interleave[10:]))
+                xlabel('FFT Channel')
+                ylabel('dB')
 
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
