@@ -78,7 +78,9 @@ variables = {
 header_variables = {
     'Header.Mode.Bitcode': 'bitcode',
     'Header.Telescope.source_name': 'source_name',
-    'Header.Telescope.obs_num': 'obs_num',
+    'Header.Telescope.ObsNum': 'ObsNum',
+    'Header.Telescope.SubObsNum': 'SubObsNum',
+    'Header.Telescope.ScanNum': 'ScanNum',
     'Header.Telescope.obspgm': 'obspgm',
     'Header.Mode.Clock': 'clk',
     'Header.Mode.Bandwidth': 'bandwidth',
