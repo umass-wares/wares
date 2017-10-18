@@ -43,10 +43,18 @@ variables = {
                             {'long_name': 'Size of FFT'}),
     'Header.Mode.FFTInputs': (numpy.dtype('int32'), (),
                             {'long_name': 'Number of FFT Inputs'}),
+    'Header.Mode.roach_id': (numpy.dtype('int32'), (),
+                            {'long_name': 'ROACH ID of roach2 board'}),
     'Header.Mode.nbram': (numpy.dtype('int32'), (), 
                             {'long_name': 'Number of BRAMs in design'}),
     'Header.Telescope.obs_num': (numpy.dtype('int64'), (),
                                  {'long_name': 'Observation Number'}),
+    'Header.Telescope.ObsNum': (numpy.dtype('int64'), (),
+                                 {'long_name': 'Observation Number'}),
+    'Header.Telescope.SubObsNum': (numpy.dtype('int64'), (),
+                                 {'long_name': 'Sub Observation Number'}),
+    'Header.Telescope.ScanNum': (numpy.dtype('int64'), (),
+                                 {'long_name': 'Scan Number'}),        
     'Data.Integrate.Inputs': (numpy.dtype('int'), ('time', ),
                               {'long_name': 'Array of Inputs to spectrometer'}),
     'Data.Integrate.acc_n': (numpy.dtype(int), ('time', ),
@@ -171,13 +179,15 @@ class WaresNetCDFFile(LMTNetCDFFile):
             if varname == 'Header.Mode.Bitcode':
                 bcode = getattr(specobj.mode,  attrname)
                 self.nc.variables['Header.Mode.Bitcode'][:len(bcode)] = netCDF4.stringtochar(numpy.array([bcode]))
+            elif varname == 'Header.Mode.roach_id':
+                self.nc.variables[varname][:] = getattr(specobj, 'roach_id')
             elif varname == 'Header.Telescope.source_name':
                 sname = specobj.source_name
                 self.nc.variables['Header.Telescope.source_name'][:len(sname)] = netCDF4.stringtochar(numpy.array([sname]))
             elif varname == 'Header.Telescope.obspgm':
                 obspgm = specobj.obspgm
                 self.nc.variables['Header.Telescope.obspgm'][:len(obspgm)] = netCDF4.stringtochar(numpy.array([obspgm]))
-            elif varname == 'Header.Telescope.obs_num':
+            elif varname in ('Header.Telescope.ObsNum', 'Header.Telescope.SubObsNum', 'Header.Telescope.ScanNum'):
                 self.nc.variables[varname][:] = getattr(specobj, attrname)
             else:
                 self.nc.variables[varname][:] = getattr(specobj.mode, attrname)

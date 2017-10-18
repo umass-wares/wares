@@ -90,9 +90,10 @@ class SpectrometerWrapper(object):
         print "Integration halted"
         self.spec.queue.put(None)  # to mark end of data
         
-    def open(self, obs_num, source_name, obspgm):
+    def open(self, obs_num, subobs_num, scan_num, source_name, obspgm):
         #self.spec.basefile = "%d_%s" % (obs_num, source_name)
-        self.spec.open_nc_file(self.roach_id, obs_num, source_name, obspgm)
+        self.spec.open_nc_file(self.roach_id, obs_num, subobs_num, scan_num,
+                               source_name, obspgm)
 
     def start(self):
         self.integration_active = True
