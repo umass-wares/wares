@@ -150,11 +150,11 @@ class SpectrometerSocketServer():
             self.printlog("No connection")
     
     def process_spectrometer_command(self):
-        data = self.recv(1024)
-        if not data:
+        self.data = self.recv(1024)
+        if not self.data:
             return False
         else:
-            msg = data.split()
+            msg = self.data.split()
             if not msg[0] in ('open', 'config', 'start', 'stop',  'close'):
                 print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
             if msg[0] == 'open':
@@ -167,12 +167,14 @@ class SpectrometerSocketServer():
                 self.stop()
             elif msg[0] == 'close':
                 self.spec_close()
-            print data
+            print self.data
+            self.send("%s DONE" % self.data)
             return True
 
     def config(self, mode, dump_time):
         self.specw.config(mode=int(mode), dump_time=float(dump_time))
         self.specw.spec.start_queue(1000)
+        
         
     def open(self, obs_num, source_name, obspgm):
         self.specw.open(int(obs_num), source_name, obspgm)
@@ -189,6 +191,10 @@ class SpectrometerSocketServer():
     def conn_close(self):
         if self.conn:
             self.conn.close()
+
+    def send(self, msg):
+        if self.conn:
+            self.conn.send(msg)
 
     def receive_with_size(self, msglen):
         msg = ''
