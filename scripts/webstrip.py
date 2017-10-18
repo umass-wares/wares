@@ -21,7 +21,7 @@ if __name__ == '__main__':
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
     parser.add_option("-H", "--host", dest="hostname",
-                      default="192.168.151.102:80",
+                      default="192.168.151.31:80",
                       help="hostname to connect like: 192.168.151.102:80 or localhost:9022 [default: %default]")
     parser.add_option("-s", "--status", dest="status",
                       action="store_true", default=False,

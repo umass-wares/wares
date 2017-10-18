@@ -48,6 +48,7 @@ class SpectrometerWrapper(object):
     def __init__(self, roach_id=0, katcp_port=7147,
                  default_ogp_file='ogp_data/ogp_chans01.npz',
                  default_inl_file='ogp_data/inl_chans01.npz'):
+        self.roach_id = roach_id
         self.spec = Spectrometer(roach_ips[roach_id],
                                  katcp_port=katcp_port,
                                  default_ogp_file=default_ogp_file,
@@ -64,7 +65,7 @@ class SpectrometerWrapper(object):
         return scale        
         
     def config(self, mode=800, dump_time=0.05):
-        valon = ValonSynthesizer('/dev/ttyUSB0')
+        valon = ValonSynthesizer('/dev/ttyUSB%d' % self.roach_id)
         print "Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A)
         valon.set_frequency(SYNTH_A, synth_freq[mode])
         print "Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A)
