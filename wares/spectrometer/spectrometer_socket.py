@@ -159,7 +159,7 @@ class SpectrometerSocketServer():
             if not msg[0] in ('open', 'config', 'start', 'stop',  'close'):
                 print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
             if msg[0] == 'open':
-                self.open(msg[1], msg[2], msg[3])
+                self.open(msg[1], msg[2], msg[3], msg[4], msg[5])
             elif msg[0] == 'config':
                 self.config(msg[1], msg[2])
             elif msg[0] == 'start':
@@ -177,8 +177,9 @@ class SpectrometerSocketServer():
         self.specw.spec.start_queue(1000)
         
         
-    def open(self, obs_num, source_name, obspgm):
-        self.specw.open(int(obs_num), source_name, obspgm)
+    def open(self, obs_num, subobs_num, scan_num, source_name, obspgm):
+        self.specw.open(int(obs_num), int(subobs_num), int(scan_num),
+                        source_name, obspgm)
         
     def start(self):
         self.specw.start()
