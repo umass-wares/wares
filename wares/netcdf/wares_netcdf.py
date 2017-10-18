@@ -47,8 +47,6 @@ variables = {
                             {'long_name': 'ROACH ID of roach2 board'}),
     'Header.Mode.nbram': (numpy.dtype('int32'), (), 
                             {'long_name': 'Number of BRAMs in design'}),
-    'Header.Telescope.obs_num': (numpy.dtype('int64'), (),
-                                 {'long_name': 'Observation Number'}),
     'Header.Telescope.ObsNum': (numpy.dtype('int64'), (),
                                  {'long_name': 'Observation Number'}),
     'Header.Telescope.SubObsNum': (numpy.dtype('int64'), (),
