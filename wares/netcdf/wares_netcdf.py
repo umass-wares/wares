@@ -43,7 +43,7 @@ variables = {
                             {'long_name': 'Size of FFT'}),
     'Header.Mode.FFTInputs': (numpy.dtype('int32'), (),
                             {'long_name': 'Number of FFT Inputs'}),
-    'Header.Mode.roach_id': (numpy.dtype('int32'), (),
+    'Header.Mode.roach_num': (numpy.dtype('int32'), (),
                             {'long_name': 'ROACH ID of roach2 board'}),
     'Header.Mode.nbram': (numpy.dtype('int32'), (), 
                             {'long_name': 'Number of BRAMs in design'}),
@@ -91,7 +91,7 @@ header_variables = {
     'Header.Mode.FFTSize': 'FFTsize',
     'Header.Mode.FFTInputs': 'FFTinputs', 
     'Header.Mode.nbram': 'nbram',
-    'Header.Mode.roach_id': 'roach_id'
+    'Header.Mode.roach_num': 'roach_num'
     }
 
                             
@@ -180,8 +180,8 @@ class WaresNetCDFFile(LMTNetCDFFile):
             if varname == 'Header.Mode.Bitcode':
                 bcode = getattr(specobj.mode,  attrname)
                 self.nc.variables['Header.Mode.Bitcode'][:len(bcode)] = netCDF4.stringtochar(numpy.array([bcode]))
-            elif varname == 'Header.Mode.roach_id':
-                self.nc.variables[varname][:] = getattr(specobj, 'roach_id')
+            elif varname == 'Header.Mode.roach_num':
+                self.nc.variables[varname][:] = getattr(specobj, attrname)
             elif varname == 'Header.Telescope.source_name':
                 sname = specobj.source_name
                 self.nc.variables['Header.Telescope.source_name'][:len(sname)] = netCDF4.stringtochar(numpy.array([sname]))

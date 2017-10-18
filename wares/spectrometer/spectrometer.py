@@ -213,10 +213,11 @@ class Spectrometer(object):
             self.open_nc_file()    
         self.nc.save_scan(self, inp)
 
-    def open_nc_file(self, roach_id=0, obs_num=None, subobs_num=None, scan_num=None,
+    def open_nc_file(self, roach_num=0, obs_num=None, subobs_num=None, scan_num=None,
                      source_name=None, obspgm=None):
         basedir = os.path.join("/data_lmt/spectrometer", "roach%d" % roach_id)
         self.ObsNum, self.SubObsNum, self.ScanNum, self.source_name, self.obspgm = obs_num, subobs_num, scan_num, source_name, obspgm
+        self.roach_num = roach_num # roach_num is integer; roach_id is IP address
         if self.ObsNum is not None and self.SubObsNum is not None and self.ScanNum is not None and self.source_name is not None:
             self.basefile = "roach%d_%d_%d_%d_%s" % (roach_id, self.ObsNum, self.SubObsNum, self.ScanNum, self.source_name)
         filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
