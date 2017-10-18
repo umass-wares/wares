@@ -12,6 +12,7 @@ from wares.utils.process_stopper import ProcessStopper
 import datetime
 import multiprocessing
 import Queue
+import os
 
 class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
@@ -212,13 +213,15 @@ class Spectrometer(object):
             self.open_nc_file()    
         self.nc.save_scan(self, inp)
 
-    def open_nc_file(self, obs_num=None, source_name=None, obspgm=None):
+    def open_nc_file(self, roach_id=0, obs_num=None, source_name=None, obspgm=None):
+        basedir = os.path.join("/data_lmt/spectrometer", "roach%d" % roach_id)
         self.obs_num, self.source_name, self.obspgm = obs_num, source_name, obspgm
         if self.obs_num is not None and self.source_name is not None:
-            self.basefile = "%d_%s" % (obs_num, source_name)
+            self.basefile = "roach%d_%d_%s" % (roach_id, obs_num, source_name)
         filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
-        print "Opening filename: %s" % filename
-        self.nc = WaresNetCDFFile(filename, 'w')
+        fullpath = os.path.join(basedir, filename)
+        print "Opening filename: %s" % fullpath
+        self.nc = WaresNetCDFFile(fullpath, 'w')
         self.nc.setup_scan(self)
         
     def start_queue(self, numdumps=500):

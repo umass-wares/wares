@@ -92,7 +92,7 @@ class SpectrometerWrapper(object):
         
     def open(self, obs_num, source_name, obspgm):
         #self.spec.basefile = "%d_%s" % (obs_num, source_name)
-        self.spec.open_nc_file(obs_num, source_name, obspgm)
+        self.spec.open_nc_file(self.roach_id, obs_num, source_name, obspgm)
 
     def start(self):
         self.integration_active = True
