@@ -91,6 +91,7 @@ header_variables = {
     'Header.Mode.FFTSize': 'FFTsize',
     'Header.Mode.FFTInputs': 'FFTinputs', 
     'Header.Mode.nbram': 'nbram',
+    'Header.Mode.roach_id': 'roach_id'
     }
 
                             
