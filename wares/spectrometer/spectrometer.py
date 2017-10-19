@@ -9,10 +9,13 @@ from wares.spectrometer.spectrometer_modes import mode_800, mode_400, mode_200
 from wares.spectrometer.spectrometer_integration import SpectrometerIntegration
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
 from wares.utils.process_stopper import ProcessStopper
+from wares.logging import logger
 import datetime
 import multiprocessing
 import Queue
 import os
+
+logger.name = __name__
 
 class Spectrometer(object):
     def __init__(self, roach_id='172.30.51.101', katcp_port=7147, mode=800, scale=1024,
@@ -123,26 +126,35 @@ class Spectrometer(object):
         bitcode = self.mode.bitcode
         self.roach.progdev(bitcode)
 
-        print 'Programming bitcode %s' %(bitcode)
+        #print 'Programming bitcode %s' %(bitcode)
+        logger.info('Programming bitcode %s' %(bitcode))
 
     def configure(self):
 
-        print 'Configuring accumulation period to %d...' %self.acc_len,
+        #print 'Configuring accumulation period to %d...' %self.acc_len,
+        logger.info('Configuring accumulation period to %d...' % self.acc_len)
         self.roach.write_int('acc_len', self.acc_len)
-        print 'done'
+        #print 'done'
+        logger.info('done')
                                                                                        
-        print 'Setting digital gain of all channels to %i...' %self.mode.gain,
+        #print 'Setting digital gain of all channels to %i...' %self.mode.gain,
+        logger.info('Setting digital gain of all channels to %i...' %self.mode.gain)
         self.roach.write_int('gain', self.mode.gain)
-        print 'done'
-
-        print 'Setting fft shift schedule to %i...' %self.mode.shift,
+        #print 'done'
+        logger.info('done')
+        
+        #print 'Setting fft shift schedule to %i...' %self.mode.shift,
+        logger.info('Setting fft shift schedule to %i...' %self.mode.shift )
         self.roach.write_int('fftshift', self.mode.shift)
-        print 'done'
-
-        print 'Setting sync period to %i...' %self.sync_period,
+        #print 'done'
+        logger.info('done')
+        
+        #print 'Setting sync period to %i...' %self.sync_period,
+        logger.info('Setting sync period to %i...' %self.sync_period)
         self.roach.write_int('sync_constant', self.sync_period)
-        print 'done'
-
+        #print 'done'
+        logger.info('done')
+        
         self.reset()
         time.sleep(0.1)
     
