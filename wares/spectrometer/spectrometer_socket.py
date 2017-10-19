@@ -162,7 +162,8 @@ class SpectrometerSocketServer():
         else:
             msg = self.data.strip().split()
             if not msg[0] in ('open', 'config', 'start', 'stop',  'close'):
-                print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
+                #print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
+                logger.error("Request has to be one of 'open', 'config', 'start', 'stop',  'close'")
             if msg[0] == 'open':
                 self.open(msg[1], msg[2], msg[3], msg[4], msg[5])
             elif msg[0] == 'config':
@@ -173,7 +174,8 @@ class SpectrometerSocketServer():
                 self.stop()
             elif msg[0] == 'close':
                 self.spec_close()
-            print self.data
+            #print self.data
+            logger.info("Received Data: %s" % self.data)
             self.send("%s DONE\n" % self.data.strip())
             return True
 
