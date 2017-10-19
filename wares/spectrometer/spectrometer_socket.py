@@ -8,12 +8,16 @@ import socket
 import sys
 import traceback
 import time
-import logging
+#import logging
+from wares.logging import logger
 
 #import syslog
 
 import SocketServer
 from .spectrometer_wrapper import SpectrometerWrapper
+
+logger.name = __name__
+
 # LOG_SYSLOG=0
 # LOG_STDOUT=1
 
@@ -128,7 +132,8 @@ class SpectrometerSocketServer():
         #     print msgtype[type], msg
         # else:
         #     syslog.syslog(type, msg)
-        print arguments
+        #print arguments
+        logger.info(arguments)
 
     def listen(self, numconnections=10):
         self.sock.listen(numconnections)

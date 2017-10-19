@@ -2,22 +2,29 @@
 import sys
 from optparse import OptionParser
 from wares.spectrometer.spectrometer_socket import SpectrometerSocketServer
+from wares.logging import logger
 import daemon
 from daemon import pidfile
+
+logger.name = __name__
 
 def start_spectrometer(options):
     spec_sock = SpectrometerSocketServer(HOST=options.hostname,
                                      PORT=options.portnumber,
                                      roach_id=options.roachid,
                                      katcp_port=options.katcp_port)
-    print "Waiting for socket connection from client"
+    #print "Waiting for socket connection from client"
+    logger.info("Spectrometer Socket server started")
+    logger.info("Waiting for socket connection from client")
     spec_sock.listen(10)
     while True:
         spec_sock.accept()
         while True:
             if spec_sock.process_spectrometer_command():
-                print "Processed command"
-                print "Ctrl-C to quit"
+                #print "Processed command"
+                logger.info("Processed command")
+                #print "Ctrl-C to quit"
+                logger.info( "Ctrl-C to quit")
             else:
                 spec_sock.conn_close()
                 break

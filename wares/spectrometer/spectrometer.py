@@ -69,7 +69,8 @@ class Spectrometer(object):
         self.mode_setup(mode=mode)
         self.nc = None
         self.basefile = basefile
-
+        logger.info("Spectrometer class inititated with roach_id: %s" % self.roach_id)
+        
     def mode_setup(self, mode=800):
         if (mode==800):
             if self.gain is not None:
@@ -160,17 +161,21 @@ class Spectrometer(object):
     
     def calADC(self):
 
-        print '------------------------'
-        print 'Loading default OGP/INL corrections to ADCs'
+        #print '------------------------'
+        logger.info( '------------------------')
+        #print 'Loading default OGP/INL corrections to ADCs'
+        logger.info('Loading default OGP/INL corrections to ADCs')
         self.adc_cal_tools.update_ogp(fname=self.default_ogp_file)
         self.adc_cal_tools.update_inl(fname=self.default_inl_file)
 
     def reset(self):
 
-        print 'Resetting counters...',
+        #print 'Resetting counters...',
+        logger.info('Resetting counters...')
         self.roach.write_int('cnt_rst',1)
         self.roach.write_int('cnt_rst',0)
-        print 'done'
+        #print 'done'
+        logger.info('done')
 
     def get_acc_n(self):
 
@@ -234,7 +239,8 @@ class Spectrometer(object):
             self.basefile = "roach%d_%d_%d_%d_%s" % (self.roach_num, self.ObsNum, self.SubObsNum, self.ScanNum, self.source_name)
         filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
         fullpath = os.path.join(basedir, filename)
-        print "Opening filename: %s" % fullpath
+        #print "Opening filename: %s" % fullpath
+        logger.info("Opening filename: %s" % fullpath)
         self.nc = WaresNetCDFFile(fullpath, 'w')
         self.nc.setup_scan(self)
         
@@ -262,8 +268,10 @@ class Spectrometer(object):
 
         read_time = time.time() - t1
 
-        print 'Done with integration'
-        print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+        #print 'Done with integration'
+        #print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+        logger.info('Done with integration')
+        logger.info('acc_n = %i, sync_n = %i' % (acc_n, sync_n))
 
         #if plt:
         #        plot(10.*np.log10(interleave[10:]))
@@ -317,8 +325,10 @@ class Spectrometer(object):
 
         
         read_time = time.time() - t1
-        print 'Done with integration'
-        print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+        #print 'Done with integration'
+        #print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
+        logger.info( 'Done with integration')
+        logger.info('acc_n = %i, sync_n = %i' %(acc_n, sync_n))
 
         #if plt:
         #        plot(10.*np.log10(self.interleave[10:]))

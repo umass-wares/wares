@@ -1,5 +1,6 @@
 from .spectrometer import Spectrometer
 from wares.utils.valon_synth import Synthesizer as ValonSynthesizer, SYNTH_A, SYNTH_B
+from wares.logging import logger
 import spectrometer_modes as spec_modes
 import time
 import threading
@@ -9,6 +10,7 @@ import threading
 #                    format='(%(threadName)-10s) %(message)s',
 #                    )
 
+logger.name = __name__
 
 roach_ips = {
     0: '10.0.0.97',
@@ -40,7 +42,8 @@ class ConsumerWriterThread(threading.Thread):
             if specdata is None:
                 break
             self.spec.nc.save_single_scan(self.spec, specdata)
-            print "Save data to NC file"
+            #print "Save data to NC file"
+            logger.debug("Save data to NC file")
             self.spec.queue.task_done()
 	return
     
@@ -66,9 +69,11 @@ class SpectrometerWrapper(object):
         
     def config(self, mode=800, dump_time=0.05):
         valon = ValonSynthesizer('/dev/ttyUSB%d' % self.roach_id)
-        print "Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A)
+        #print "Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A)
+        logger.info("Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A))
         valon.set_frequency(SYNTH_A, synth_freq[mode])
-        print "Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A)
+        #print "Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A)
+        logger.info("Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A))
         mode_fn = getattr(spec_modes, 'mode_%d' % mode)
         mode_obj = mode_fn()
         scale = self.calc_scale(dump_time, mode_obj)
@@ -77,7 +82,8 @@ class SpectrometerWrapper(object):
         
     def integrate(self, inputs):
         #logging.debug('Starting ')
-        print "Starting"
+        #print "Starting"
+        logger.info("Integration Starting")
         while self.integration_active:
             #t1 = time.time()
             #acc_n = self.spec.get_acc_n()
@@ -87,7 +93,8 @@ class SpectrometerWrapper(object):
             #    time.sleep(0.001)
             #while time.time() - t1 < self.spec.sync_time:
             #    time.sleep(0.001)
-        print "Integration halted"
+        #print "Integration halted"
+        logger.info("Integrration halted")
         self.spec.queue.put(None)  # to mark end of data
         
     def open(self, obs_num, subobs_num, scan_num, source_name, obspgm):
@@ -104,7 +111,8 @@ class SpectrometerWrapper(object):
         self.integrate_thread.start()
         self.consumer_thread = ConsumerWriterThread(args=(self.spec, ))
         self.consumer_thread.start()
-        print "Started integrate thread and consumer writer thread"
+        #print "Started integrate thread and consumer writer thread"
+        logger.info("Started integrate thread and consumer writer thread")
         #self.integrate([0, 1, 2, 3])
 
     def stop(self):

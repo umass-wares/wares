@@ -54,7 +54,7 @@ def add_file_handler(log, fname):
     handler = handlers.RotatingFileHandler(fname, maxBytes=20480,
                                            backupCount=5)
     # create formatter
-    formatter = pylogging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = pylogging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(threadName)s - %(message)s")
     #handler.setLevel(level)
     handler.setLevel(pylogging.DEBUG)
     handler.setFormatter(formatter)
