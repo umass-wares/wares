@@ -126,7 +126,7 @@ class SpectrometerWrapper(object):
         self.spec.snapshot_file_all(roach_num=self.roach_id, obsnum=self.ObsNum)
 
     def snapsend(self):
-        return self.snapsend()
+        return self.spec.snapsend()
     
     def close(self):
         #self.spec.save_all_scans()
