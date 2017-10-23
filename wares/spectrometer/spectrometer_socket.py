@@ -170,7 +170,7 @@ class SpectrometerSocketServer():
             msg = self.data.strip().split()
             if not msg[0] in ('open', 'config', 'start', 'stop',  'close', 'snapshot'):
                 #print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
-                logger.error("Request has to be one of 'open', 'config', 'start', 'stop',  'close', 'snapshot'")
+                logger.error("Request has to be one of 'open', 'config', 'start', 'stop',  'close', 'snapshot', 'snapsend'")
             if msg[0] == 'open':
                 self.open(msg[1], msg[2], msg[3], msg[4], msg[5])
             elif msg[0] == 'config':
@@ -182,10 +182,15 @@ class SpectrometerSocketServer():
             elif msg[0] == 'close':
                 self.spec_close()
             elif msg[0] == 'snapshot':
-                self.spec_snapshot()                
+                self.spec_snapshot()
+            elif msg[0] == 'snapsend':
+                snaps = self.spec_snapsend()                                
             #print self.data
             logger.info("Received Data: %s" % self.data)
-            self.send("%s DONE\n" % self.data.strip())
+            if msg[0] == 'snapsend':
+                self.send("%s DONE; %.2f %.2f %.2f %.2f\n" % (self.data.strip(), snaps[0], snaps[1], snaps[2], snaps[3]))
+            else:
+                self.send("%s DONE\n" % self.data.strip())
             return True
 
     def config(self, mode, dump_time):
@@ -209,6 +214,9 @@ class SpectrometerSocketServer():
 
     def spec_snapshot(self):
         self.specw.snapshot()
+
+    def spec_snapsend(self):
+        return self.specw.snapsend()        
         
     def conn_close(self):
         if self.conn:

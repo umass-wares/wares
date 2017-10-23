@@ -389,6 +389,13 @@ class Spectrometer(object):
             time.sleep(0.010)
         logger.info("Done with Snapshots")
 
+    def snapsend(self):
+        sdev = []
+        for inp in range(4):
+            raw = self.snap(inp)
+            time.sleep(0.010)
+            sdev.append(raw.std())
+        return sdev
         
     def snap_bad(self):
 
