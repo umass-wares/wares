@@ -378,6 +378,18 @@ class Spectrometer(object):
         raw = self.snap(inp)
         np.savetxt(filename, raw)
 
+    def snapshot_file_all(self, roach_num=0, obsnum=None):
+        basedir = os.path.join("/data_lmt/spectrometer/snapshots", "roach%d" % roach_num)
+        basefile = "roach%d_%d" % (roach_num, obsnum)
+        for inp in range(4):
+            filename ="%s_inp%d_%s.txt" % (basefile, inp, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
+            fullpath = os.path.join(basedir, filename)
+            self.snap_file(inp, fullpath)
+            logger.info("Wrote snapshot file %s" % fullpath)
+            time.sleep(0.010)
+        logger.info("Done with Snapshots")
+
+        
     def snap_bad(self):
 
         raw = adc5g.get_snapshot(self.roach, 'snap')

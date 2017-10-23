@@ -58,6 +58,7 @@ class SpectrometerWrapper(object):
                                  default_inl_file=default_inl_file,
                                  gain=0xfffff, basefile='spectrometer')
         self.integration_active = False
+        self.ObsNum = 1 # default obsnum
         
     def calc_scale(self, dump_time, mode_obj):
         """
@@ -99,6 +100,7 @@ class SpectrometerWrapper(object):
         
     def open(self, obs_num, subobs_num, scan_num, source_name, obspgm):
         #self.spec.basefile = "%d_%s" % (obs_num, source_name)
+        self.ObsNum = obs_num
         self.spec.open_nc_file(self.roach_id, obs_num, subobs_num, scan_num,
                                source_name, obspgm)
 
@@ -119,7 +121,10 @@ class SpectrometerWrapper(object):
         self.integration_active = False
         self.consumer_thread.join()
         self.integrate_thread.join()
-    
+
+    def snapshot(self):
+        self.spec.snapshot_file_all(roach_num=self.roach_id, obsnum=self.ObNum)
+
     def close(self):
         #self.spec.save_all_scans()
         self.spec.close_scan()
