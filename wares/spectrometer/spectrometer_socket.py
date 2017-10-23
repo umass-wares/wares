@@ -18,6 +18,13 @@ from .spectrometer_wrapper import SpectrometerWrapper
 
 logger.name = __name__
 
+
+spec_mode_dict = {
+    2: 800,
+    1: 400,
+    0: 200
+    }
+
 # LOG_SYSLOG=0
 # LOG_STDOUT=1
 
@@ -182,7 +189,8 @@ class SpectrometerSocketServer():
             return True
 
     def config(self, mode, dump_time):
-        self.specw.config(mode=int(mode), dump_time=float(dump_time))
+        specmode = spec_mode_dict.get(int(mode), 2)
+        self.specw.config(mode=specmode, dump_time=float(dump_time))
         self.specw.spec.start_queue(1000)
         
         
