@@ -25,6 +25,9 @@ spec_mode_dict = {
     0: 200
     }
 
+allowed_commands = ['config', 'open', 'start', 'stop', 'close',
+                    'snapshot', 'snapsend']
+
 # LOG_SYSLOG=0
 # LOG_STDOUT=1
 
@@ -168,9 +171,10 @@ class SpectrometerSocketServer():
             return False
         else:
             msg = self.data.strip().split()
-            if not msg[0] in ('open', 'config', 'start', 'stop',  'close', 'snapshot'):
+            if not msg[0] in allowed_commands:
                 #print "Request has to be one of 'open', 'config', 'start', 'stop',  'close'"
-                logger.error("Request has to be one of 'open', 'config', 'start', 'stop',  'close', 'snapshot', 'snapsend'")
+                logger.error("Request has to be one of %s" % allowed_commands)
+                return False
             if msg[0] == 'open':
                 self.open(msg[1], msg[2], msg[3], msg[4], msg[5])
             elif msg[0] == 'config':
