@@ -116,7 +116,8 @@ def allan_analysis_nc(start_obs_num, numscans=4000,
     nc = WaresNetCDFFile(files[0])
     freqres = (nc.hdu.header.get('Mode.Bandwidth')/nc.hdu.header.get('Mode.numchannels')) * 1e6
     Nout = numscans
-
+    rmsvals = rmsvals[inputpix, :, :]
+    
     if max_allan is not None:
         maxk = max_allan
     else:
