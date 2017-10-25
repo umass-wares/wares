@@ -109,7 +109,7 @@ def allan_analysis_nc(start_obs_num, numscans=4000,
                       indices=None,
                       sampleint=None,
                       return_spectra=True):
-    rmsvals = load_allan_nc_scans(start_obs_num, numscans=numscans,
+    rmsvals = load_allan_nc_files(start_obs_num, numscans=numscans,
                                   source=source, roach_id=roach_id)
     ninputs, nscans, nchans = rmsvals.shape
     files = glob_files(start_obs_num, source=source, roach_id=roach_id)
