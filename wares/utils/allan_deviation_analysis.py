@@ -6,6 +6,7 @@ from wares.netcdf.wares_netcdf import WaresNetCDFFile
 
 import numpy
 import math
+import glob
 
 def load_allan_scans(filename, startscan=0, numscans=5000,
                      inputpix=0):
@@ -18,6 +19,15 @@ def load_allan_scans(filename, startscan=0, numscans=5000,
         numscans = nscans
     return data[startscan:startscan+numscans]
 
+def load_allan_nc_files(start_obs_num, numscans, source='allantest', roach_id=0):
+    files = glob.glob('/data_lmt/spectrometer/roach%1d/roach%1d_%s*%s%.nc' % (roach_id, roach_id, str(start_obs_num)[0], source))
+    if len(files) != numscans:
+        print "Number of files %d not same as numscans requested %d" % (len(files), numscans)
+    else:
+        print len(files)
+
+                      
+                        
 def find_sample_interval(filename):
     nc = WaresNetCDFFile(filename)
     return numpy.diff(nc.hdu.data.time).mean()
