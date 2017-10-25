@@ -25,7 +25,15 @@ def load_allan_nc_files(start_obs_num, numscans, source='allantest', roach_id=0)
         print "Number of files %d not same as numscans requested %d" % (len(files), numscans)
     else:
         print len(files)
-
+        nc = WaresNetCDFFile(files[0])
+        nchannels = nc.hdu.header.get('Mode.numchannels')
+        data = numpy.zeros((4, numscans, nchannels), dtype='float64')
+        for i, filen in enumerate(files):
+            nc = WaresNetCDFFile(filen)
+            for inp in range(4):
+                ind = nc.hdu.data.Inputs == inp
+                data[inp, i, :] = nc.hdu.data.Data[ind, :].mean(axis=0)
+        return data
                       
                         
 def find_sample_interval(filename):
