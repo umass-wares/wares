@@ -3,6 +3,7 @@ import adc5g
 #import time
 #import datetime
 import numpy as np
+import scipy.optimize
 #from numpy import array, mean
 #from scipy.optimize import leastsq
 #from scipy.optimize import curve_fit
@@ -13,23 +14,6 @@ import math
 from pkg_resources import resource_string
 import io
 import os
-
-#
-# Functions used by the fitting routines
-#
-
-# def syn_func( x, off, a1, a2):
-#         return off +  a1*np.sin(x) + a2*np.cos(x)
-
-# def fitsin(p, sin, cos):
-# 	return p[0] + p[1]*sin + p[2]*cos
-
-# def sin_residuals(p, sin, cos, raw):
-#         res = raw - fitsin(p, sin, cos)
-#         for i in range(raw.size):
-#             if raw[i] == -128 or raw[i] == 127:
-#                 res[i] = 0
-#         return res
 
 #
 # ADC5g Calibration Tools
@@ -51,13 +35,15 @@ class ADC5g_Load():
     
     def __init__(self, roach, program = True, roach_id = '172.30.51.97', 
 		 bitstream = 'adc5g_tim_aleks_test_2015_Oct_14_1208.bof.gz',
-		 clk=1600):
+		 root = '/home/oper/wares/ogp_data/', clk=1600):
 
 	    self.roach_id = roach_id
 	    self.bitstream = bitstream
 	    self.clk = clk
 	    self.freqs_cores = np.linspace(100, clk/4, 6, endpoint=False)
 	    self.freqs_bw = np.arange(50,clk/2,25)
+	    self.corder = [1,2,3,4]
+	    self.root = root
 	    #self.syn = HP8780A('8780a')
 	    self.roach = roach
 
@@ -66,58 +52,190 @@ class ADC5g_Load():
                    
 
     def program(self):
-            
-         print 'Programming ROACH with calibration bitstream:'
-         print '%s' %(self.bitstream)
-         self.roach.progdev(self.bitstream)
-   
-    # def get_channel_snap_reg(self, chan):
+   	         
+        print 'Programming ROACH with calibration bitstream:'
+        print '%s' %(self.bitstream)
+        self.roach.progdev(self.bitstream)
 
-    #      """
-    #         Gets the snap register string based on channel No. (0,1,2,3)
-    #      """
-	    
-    #      reg = None
+    def gaussian(self,x,a,mu,sig):
 
-    #      if chan == 0:
-    #     	 reg = 'scope_raw_a0_snap'
-
-    #      if chan == 1:
-    #     	 reg = 'scope_raw_c0_snap'
-
-    #      if chan == 2:
-    #     	 reg = 'scope_raw_a1_snap'
-	    
-    #      if chan == 3:
-    #     	 reg = 'scope_raw_c1_snap'
-
-    #      return reg
-     
-    
-    def get_channel_core_spi(self, chan):
-
-        """
-	   Gets the spi parameters based on channel No. (0,1,2,3)
+	"""
+		Fitting function for Gaussian -> a*exp(-(x-mu)**2 / (2. * sig**2))
 	"""
 
-        if chan == 0:
+        return a*np.exp(-(x-mu)**2 / (2. * sig**2))
+
+    def chisq(self, par, x, y, yerr):
+
+	"""
+		Chisq of fit to model gaussian
+	"""
+
+        (a, mu, sig) = par
+        return np.sum((self.gaussian(x,a,mu,sig)-y)**2/yerr**2)
+
+    def accumulate_counts(self, inp, rpt=50):
+
+	"""
+		Accumulates for 'inp' input, 'rpt' number of snapshots
+		Returns bincounts of 0-offset ADC levels (-127 to 128)
+	"""
+        counts = np.zeros((2,256))
+
+        for i in range(rpt):
+                i = np.array(adc5g.get_snapshot(self.roach, 'snap%i' %inp))
+                bc_a = np.bincount((i[0::2]+128))
+                bc_b = np.bincount((i[1::2]+128))
+                counts[0,:len(bc_a)] += bc_a
+                counts[1,:len(bc_b)] += bc_b
+
+        return counts
+
+    def fit_counts(self, counts):
+
+	"""
+		Fits accumulated counts from 'accumulate_counts' to Gaussian
+		Returns mean, std, avg_std between cores, fit parameters
+		Might need some twiddling with initial fit parameters
+	"""
+
+        means = np.zeros(2)
+        stds = np.zeros(2)
+        params = np.zeros((2,3))
+        x = np.arange(-128,128,1)
+
+        for i in range(2):
+                y = counts[i]
+                yerr = np.sqrt(y+1)
+                p0 = (np.max(y), 5., 40.)
+                ret = scipy.optimize.fmin(self.chisq, p0, 
+			args=(x[1:-1], y[1:-1], yerr[1:-1]),disp=False)
+                means[i] = ret[1]
+                stds[i] = ret[2]
+                params[i] = ret
+
+        avg_std = np.mean(stds)
+
+        return means, stds, avg_std, params
+
+
+    def get_input_spi(self, inp):
+
+        """
+	   Gets the spi parameters based on inp
+	"""
+
+        if inp == 0:
                 zdok = 0
-                cores = range(1,3)
+                cores = self.corder[:2]
 
-        if chan == 1:
+        if inp == 1:
                 zdok = 0
-                cores = range(3,5)
+                cores = self.corder[2:]
 
-        if chan == 2:
+        if inp == 2:
                 zdok = 1
-                cores =range(1,3)
+                cores = self.corder[:2]
 
-        if chan == 3:
+        if inp == 3:
                 zdok = 1
-                cores =range(3,5)
+                cores = self.corder[2:]
 
         return zdok, cores
 
+    def load_og(self, inp):
+	
+	"""
+	   Loads og values for an input 'inp' from roach/inp txt file
+	"""
+
+	og_file = self.root + 'roach%s_inp%i_clk%i_og.txt' %(self.roach_id, inp, self.clk)
+	og_inp = np.loadtxt(og_file)
+	print 'Loading OG solution from %s' %(og_file)
+	return og_inp
+
+    def save_og(self, inp, og_inp):
+	
+	"""
+	  Saves OG solution for 'inp' into txt file
+	"""
+
+	og_file = self.root + 'roach%s_inp%i_clk%i_og.txt' %(self.roach_id, inp, self.clk)
+	np.savetxt(og_file, og_inp)
+	print 'Saving OG solution into %s' %(og_file) 	
+	
+
+    def get_og(self, inp):
+
+        """
+           Returns loaded ogp values for an input 'inp'
+        """
+
+        og_inp = []
+
+        zdok, cores = self.get_input_spi(inp)
+
+        for core in cores:
+            off = adc5g.get_spi_offset(self.roach, zdok, core)
+            gain = adc5g.get_spi_gain(self.roach, zdok, core)
+            #phase = adc5g.get_spi_phase(self.roach, zdok, core)
+            og_core = [off, gain]
+            og_inp.append(og_core)
+
+        return og_inp
+
+    def set_og(self, inp, og_inp):
+
+	"""
+	   Sets og values for an input 'inp', 'og_inp' = (og core1, og core2)
+	"""
+
+	zdok, cores = self.get_input_spi(inp)
+
+	for i in range(2):
+		adc5g.set_spi_offset(self.roach, zdok, cores[i], og_inp[i][0])
+		adc5g.set_spi_gain(self.roach, zdok, cores[i], og_inp[i][1]) 
+		print "Seting OG for Input %i, ZDOK %i: Core %i" %(inp, zdok,cores[i])
+		print "O = %f, G = %f \n" %(og_inp[i][0], og_inp[i][1])
+
+    def fit_og(self, inp, rpt=5, write=True):
+
+	"""
+		Fits accumulated counts to Gaussian and determines new OG solutions
+		Can iterate multiple fits 'rpt' for solution convergence
+		Can write into txt file
+	"""
+
+        for j in range(rpt):
+                counts = self.accumulate_counts(inp)
+                means, stds, avg_std, params = self.fit_counts(counts)
+		og_inp = self.get_og(inp)
+		og_new = []
+		
+		print "Rpt # %i" %(j)
+                for i in range(2):
+			o_old, g_old = og_inp[i]
+                        o_new = o_old-means[i]*(500./256.)
+                        g_new = (g_old+100.)*(avg_std/stds[i]) - 100.
+
+			if abs(o_new) > 50.0:
+				print "WARNING: Offset solution not found for Input %i Core %i, setting to 0 mV" %(inp,i)
+				o_new = 0.
+			if abs(g_new) > 18.0:
+				print "WARNING: Gain solution not found for Input %i Core %i, setting to 0 percent" %(inp,i)
+				g_new = 0.
+			og_new.append([o_new,g_new])
+ 
+		self.set_og(inp, og_new)
+
+	print "New OG Solution for Input %i from %i rpts" %(inp, rpt)
+	print "O = %f, G = %f" %(og_inp[0][0], og_inp[0][1])
+	print "O = %f, G = %f\n" %(og_inp[1][0], og_inp[1][1])
+
+	if write:
+		self.save_og(inp, og_inp)
+
+		
 		    
 #     def get_snap(self, chan, freq): #MHz
 
@@ -361,74 +479,74 @@ class ADC5g_Load():
     #     return multi_sinad     
 
 
-    def get_ogp_chan(self, chan):
+    #def get_ogp_chan(self, chan):
 
-        """
-	   Returns ogp values for a channel 'chan'
-	"""
+    #    """
+    #	   Returns ogp values for a channel 'chan'
+    #	"""
 
-        ogp_chan = []
+    #    ogp_chan = []
     
-        zdok, cores = self.get_channel_core_spi(chan)
+    #    zdok, cores = self.get_channel_core_spi(chan)
 
-        for core in cores:
+    #    for core in cores:
 
-            off = adc5g.get_spi_offset(self.roach, zdok, core) 
-            gain = adc5g.get_spi_gain(self.roach, zdok, core)
-            phase = adc5g.get_spi_phase(self.roach, zdok, core)
-            ogp_core = [off, gain, phase]
+    #        off = adc5g.get_spi_offset(self.roach, zdok, core) 
+    #        gain = adc5g.get_spi_gain(self.roach, zdok, core)
+    #        phase = adc5g.get_spi_phase(self.roach, zdok, core)
+    #        ogp_core = [off, gain, phase]
 
-            ogp_chan.append(ogp_core)
+    #        ogp_chan.append(ogp_core)
 
-        return ogp_chan
+    #    return ogp_chan
 
-    def get_ogp(self, chans=[0,1]):
+    #def get_ogp(self, chans=[0,1,2,3]):
 
-        """
-	   Get OGP for all channels in 'chans'
-	"""
+    #    """
+    #	   Get OGP for all channels in 'chans'
+    #	"""
 
-	for chan in chans:
+    #	for chan in chans:
 
-		ogp_chan = self.get_ogp_chan(chan)
+    #		ogp_chan = self.get_ogp_chan(chan)
 
-		print
-		print 'OGP set on channel %i' %chan
-		print
+    #		print
+    #		print 'OGP set on channel %i' %chan
+    #		print
 		
-		print 'Core 1'
-		print ogp_chan[0]
-		print
-
-		print 'Core 2'
-		print ogp_chan[1]
-		print
+    #		print 'Core 1'
+    #		print ogp_chan[0]
+    #		print
+ 
+    #		print 'Core 2'
+    #		print ogp_chan[1]
+    #		print
 	
 
-    def set_ogp(self, ogp_chan, chan):
+    #def set_ogp(self, ogp_chan, chan):
 
-        """
-	   Sets ogp for two cores of channel 'chan'
-	   multi_ogp is format (ogp1, ogp2)
-        """
+    #    """
+    #	   Sets ogp for two cores of channel 'chan'
+    #	   multi_ogp is format (ogp1, ogp2)
+    #    """
 
-        zdok, cores = self.get_channel_core_spi(chan)
+    #    zdok, cores = self.get_channel_core_spi(chan)
 
-	i = 0
-        for core in cores:
+    #	i = 0
+    #    for core in cores:
             
-            off, gain, phase = ogp_chan[i]
+    #        off, gain, phase = ogp_chan[i]
 
-            off_spi = math.floor(.5 + off*255/100.) + 0x80
-            adc5g.set_spi_offset(self.roach, zdok, core, float(off))
+    #        off_spi = math.floor(.5 + off*255/100.) + 0x80
+    #        adc5g.set_spi_offset(self.roach, zdok, core, float(off))
 
-            gain_spi = math.floor(.5 + gain*255/36.) + 0x80
-            adc5g.set_spi_gain(self.roach, zdok, core, float(gain))
+    #        gain_spi = math.floor(.5 + gain*255/36.) + 0x80
+    #        adc5g.set_spi_gain(self.roach, zdok, core, float(gain))
 
-            phase_spi = math.floor(.5 + phase*255/28.) + 0x80
-            adc5g.set_spi_phase(self.roach, zdok, core, float(phase)*0.65)
+    #        phase_spi = math.floor(.5 + phase*255/28.) + 0x80
+    #        adc5g.set_spi_phase(self.roach, zdok, core, float(phase)*0.65)
 
-	    i += 1
+    #	    i += 1
 
         #self.roach.progdev(self.bitstream)
 
@@ -554,53 +672,53 @@ class ADC5g_Load():
     #     return ogp_chan
 
 
-    def update_ogp(self, fname='ogp_chans01.npz'):
+    #def update_ogp(self, fname='ogp_chans01.npz'):
 	    
-        """
-	   Updates ogp from .npz file
-	"""
-        if not os.path.exists(fname):
-                data = resource_string(__name__, 'ogp_data/%s' % fname)
-	        df = np.load(io.BytesIO(data))
-        else:
-                df = np.load(fname)
-	multi_ogp = df['multi_ogp']
-	chans = df['chans']
+    #    """
+    #	   Updates ogp from .npz file
+    #	"""
+    #    if not os.path.exists(fname):
+    #            data = resource_string(__name__, 'ogp_data/%s' % fname)
+    #	        df = np.load(io.BytesIO(data))
+    #    else:
+    #            df = np.load(fname)
+    #	multi_ogp = df['multi_ogp']
+    #	chans = df['chans']
 
-	i = 0
-	for chan in chans:
+    #	i = 0
+    #	for chan in chans:
 
-		ogp_chan = multi_ogp[i]
+    #		ogp_chan = multi_ogp[i]
 
 		
-		print
-		print "Setting ogp for chan %i..." %chan
-		print ogp_chan
-		print
+    #		print
+    #		print "Setting ogp for chan %i..." %chan
+    #		print ogp_chan
+    #		print
 	
-		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
-		i += 1
+    #		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
+    #		i += 1
 
 	#self.roach.progdev(self.bitstream)
 
 
-    def clear_ogp(self, chans = [0,1,2,3]):
+    #def clear_ogp(self, chans = [0,1,2,3]):
 
-        """
-	   Sets OGP to 0 for channels in 'chans'
-        """
+    #    """
+    #	   Sets OGP to 0 for channels in 'chans'
+    #    """
 
-	for chan in chans:
+    #	for chan in chans:
 
-		zdok, cores = self.get_channel_core_spi(chan)
+    #		zdok, cores = self.get_channel_core_spi(chan)
 
-		for core in cores:
+    #		for core in cores:
 
-			adc5g.set_spi_offset(self.roach, zdok, core, 0)
+    #			adc5g.set_spi_offset(self.roach, zdok, core, 0)
 
-			adc5g.set_spi_gain(self.roach, zdok, core, 0)
+    #			adc5g.set_spi_gain(self.roach, zdok, core, 0)
 
-			adc5g.set_spi_phase(self.roach, zdok, core, 0)
+    #			adc5g.set_spi_phase(self.roach, zdok, core, 0)
 
         #self.roach.progdev(self.bitstream)
 
