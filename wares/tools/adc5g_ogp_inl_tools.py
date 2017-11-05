@@ -523,30 +523,30 @@ class ADC5g_Load():
     #		print
 	
 
-    #def set_ogp(self, ogp_chan, chan):
+    def set_ogp(self, ogp_chan, chan):
 
-    #    """
-    #	   Sets ogp for two cores of channel 'chan'
-    #	   multi_ogp is format (ogp1, ogp2)
-    #    """
+        """
+    	   Sets ogp for two cores of channel 'chan'
+    	   multi_ogp is format (ogp1, ogp2)
+        """
 
-    #    zdok, cores = self.get_channel_core_spi(chan)
-
-    #	i = 0
-    #    for core in cores:
+    #   zdok, cores = self.get_channel_core_spi(chan)
+	zdok, cores = self.get_input_spi(chan)
+        i = 0
+        for core in cores:
             
-    #        off, gain, phase = ogp_chan[i]
+            off, gain, phase = ogp_chan[i]
 
-    #        off_spi = math.floor(.5 + off*255/100.) + 0x80
-    #        adc5g.set_spi_offset(self.roach, zdok, core, float(off))
+            off_spi = math.floor(.5 + off*255/100.) + 0x80
+            adc5g.set_spi_offset(self.roach, zdok, core, float(off))
 
-    #        gain_spi = math.floor(.5 + gain*255/36.) + 0x80
-    #        adc5g.set_spi_gain(self.roach, zdok, core, float(gain))
+            gain_spi = math.floor(.5 + gain*255/36.) + 0x80
+            adc5g.set_spi_gain(self.roach, zdok, core, float(gain))
 
-    #        phase_spi = math.floor(.5 + phase*255/28.) + 0x80
-    #        adc5g.set_spi_phase(self.roach, zdok, core, float(phase)*0.65)
+            phase_spi = math.floor(.5 + phase*255/28.) + 0x80
+            adc5g.set_spi_phase(self.roach, zdok, core, float(phase)*0.65)
 
-    #	    i += 1
+    	    i += 1
 
         #self.roach.progdev(self.bitstream)
 
@@ -672,34 +672,34 @@ class ADC5g_Load():
     #     return ogp_chan
 
 
-    #def update_ogp(self, fname='ogp_chans01.npz'):
+    def update_ogp(self, fname='ogp_chans01.npz'):
 	    
-    #    """
-    #	   Updates ogp from .npz file
-    #	"""
-    #    if not os.path.exists(fname):
-    #            data = resource_string(__name__, 'ogp_data/%s' % fname)
-    #	        df = np.load(io.BytesIO(data))
-    #    else:
-    #            df = np.load(fname)
-    #	multi_ogp = df['multi_ogp']
-    #	chans = df['chans']
+        """
+    	   Updates ogp from .npz file
+    	"""
+        if not os.path.exists(fname):
+                data = resource_string(__name__, 'ogp_data/%s' % fname)
+    	        df = np.load(io.BytesIO(data))
+        else:
+                df = np.load(fname)
+    	multi_ogp = df['multi_ogp']
+    	chans = df['chans']
 
-    #	i = 0
-    #	for chan in chans:
+    	i = 0
+    	for chan in chans:
 
-    #		ogp_chan = multi_ogp[i]
+    		ogp_chan = multi_ogp[i]
 
 		
-    #		print
-    #		print "Setting ogp for chan %i..." %chan
-    #		print ogp_chan
-    #		print
+    		print
+    		print "Setting ogp for chan %i..." %chan
+    		print ogp_chan
+    		print
 	
-    #		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
-    #		i += 1
+    		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
+    		i += 1
 
-	#self.roach.progdev(self.bitstream)
+	self.roach.progdev(self.bitstream)
 
 
     #def clear_ogp(self, chans = [0,1,2,3]):
