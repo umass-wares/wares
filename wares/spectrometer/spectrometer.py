@@ -58,14 +58,14 @@ class Spectrometer(object):
         #     else:
         #         self.mode = mode_200()
 
-        self.adc_cal_tools = ADC5g_Load(self.roach, program=False)
+        #self.adc_cal_tools = ADC5g_Load(self.roach, program=False)
 
         # self.set_sync_period()
         # self.set_acc_len()
 
         # self.program_device()
         # self.configure()
-        self.calADC()
+        #self.calADC()
         self.mode_setup(mode=mode)
         self.nc = None
         self.basefile = basefile
@@ -165,10 +165,10 @@ class Spectrometer(object):
         logger.info( '------------------------')
         #print 'Loading default OGP/INL corrections to ADCs'
         logger.info('Loading default OGP/INL corrections to ADCs')
-        #self.adc_cal_tools.update_ogp(fname=self.default_ogp_file)
-        #self.adc_cal_tools.update_inl(fname=self.default_inl_file)
-	for inp in range(4):
-		self.adc_cal_tools.fit_og(inp)
+        self.adc_cal_tools.update_ogp(fname=self.default_ogp_file)
+        self.adc_cal_tools.update_inl(fname=self.default_inl_file)
+	#for inp in range(4):
+	# self.adc_cal_tools.fit_og(inp)
 
     def reset(self):
 
