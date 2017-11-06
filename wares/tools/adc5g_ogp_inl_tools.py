@@ -903,7 +903,7 @@ class ADC5g_Load():
 	   inl_chan is format (inl1, inl2)
 	"""
 
-        zdok, cores = self.get_channel_core_spi(chan)
+        zdok, cores = self.get_input_spi(chan)
 
         i = 0
 
