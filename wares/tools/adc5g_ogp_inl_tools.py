@@ -530,9 +530,9 @@ class ADC5g_Load():
     	   multi_ogp is format (ogp1, ogp2)
         """
 
-        zdok, cores = self.get_input_spi(chan)
-
-    	i = 0
+    #   zdok, cores = self.get_channel_core_spi(chan)
+	zdok, cores = self.get_input_spi(chan)
+        i = 0
         for core in cores:
             
             off, gain, phase = ogp_chan[i]
