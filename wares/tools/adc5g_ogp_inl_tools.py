@@ -699,7 +699,7 @@ class ADC5g_Load():
     		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
     		i += 1
 
-	self.roach.progdev(self.bitstream)
+	#self.roach.progdev(self.bitstream)
 
 
     #def clear_ogp(self, chans = [0,1,2,3]):
