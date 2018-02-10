@@ -699,7 +699,7 @@ class ADC5g_Load():
     		self.set_ogp(ogp_chan = ogp_chan, chan = chan)
     		i += 1
 
-	self.roach.progdev(self.bitstream)
+	#self.roach.progdev(self.bitstream)
 
 
     #def clear_ogp(self, chans = [0,1,2,3]):
@@ -862,7 +862,7 @@ class ADC5g_Load():
 
 	 inl_chan = []
 
-	 zdok, cores = self.get_channel_core_spi(chan)
+	 zdok, cores = self.get_input_spi(chan)
 
 	 for core in cores:
 
@@ -903,7 +903,7 @@ class ADC5g_Load():
 	   inl_chan is format (inl1, inl2)
 	"""
 
-        zdok, cores = self.get_channel_core_spi(chan)
+        zdok, cores = self.get_input_spi(chan)
 
         i = 0
 

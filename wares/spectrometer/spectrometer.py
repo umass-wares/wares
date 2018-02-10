@@ -90,7 +90,7 @@ class Spectrometer(object):
             else:
                 self.mode = mode_200()
 
-        self.adc_cal_tools = ADC5g_Load(self.roach, program=False)
+        self.adc_cal_tools = ADC5g_Load(self.roach, program=False, roach_id=self.roach_id)
 
         self.set_sync_period()
         self.set_acc_len()
