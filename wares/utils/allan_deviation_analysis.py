@@ -19,12 +19,12 @@ def load_allan_scans(filename, startscan=0, numscans=5000,
         numscans = nscans
     return data[startscan:startscan+numscans]
 
-def glob_files(start_obs_num, source='allantest', roach_id=0):
-    files = glob.glob('/data_lmt/spectrometer/roach%1d/roach%1d_%s*%s*.nc' % (roach_id, roach_id, str(start_obs_num)[0], source))
+def glob_files(start_obs_num, date, source='allantest', roach_id=0):
+    files = glob.glob('/data_lmt/spectrometer/roach%1d/roach%1d_%s_0_0_%s_%s*.nc' % (roach_id, roach_id, str(start_obs_num)[0], source, date))
     return files
 
-def load_allan_nc_files(start_obs_num, numscans, source='allantest', roach_id=0):
-    files = glob_files(start_obs_num, source=source, roach_id=roach_id)
+def load_allan_nc_files(start_obs_num, numscans, date, source='allantest', roach_id=0):
+    files = glob_files(start_obs_num, date=date, source=source, roach_id=roach_id)
     if len(files) != numscans:
         print "Number of files %d not same as numscans requested %d" % (len(files), numscans)
     if numscans <= len(files):
@@ -103,6 +103,7 @@ def allan_analysis(filename, startscan=0, numscans=5000,
         return (time, theory, alanvar, rmsvals)    
 
 def allan_analysis_nc(start_obs_num, numscans=4000,
+                      date='2018-02-10',
                       source='allantest', roach_id=0,
                       inputpix=0, max_allan=None,
                       lochan=500, hichan=1000,
@@ -110,7 +111,7 @@ def allan_analysis_nc(start_obs_num, numscans=4000,
                       sampleint=None,
                       return_spectra=True):
     rmsvals = load_allan_nc_files(start_obs_num, numscans=numscans,
-                                  source=source, roach_id=roach_id)
+                                  date=date, source=source, roach_id=roach_id)
     ninputs, nscans, nchans = rmsvals.shape
     files = glob_files(start_obs_num, source=source, roach_id=roach_id)
     nc = WaresNetCDFFile(files[0])
