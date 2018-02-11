@@ -113,7 +113,7 @@ def allan_analysis_nc(start_obs_num, numscans=4000,
     rmsvals = load_allan_nc_files(start_obs_num, numscans=numscans,
                                   date=date, source=source, roach_id=roach_id)
     ninputs, nscans, nchans = rmsvals.shape
-    files = glob_files(start_obs_num, source=source, roach_id=roach_id)
+    files = glob_files(start_obs_num, date=date, source=source, roach_id=roach_id)
     nc = WaresNetCDFFile(files[0])
     freqres = (nc.hdu.header.get('Mode.Bandwidth')/nc.hdu.header.get('Mode.numchannels')) * 1e6
     Nout = numscans
