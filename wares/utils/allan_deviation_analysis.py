@@ -20,7 +20,7 @@ def load_allan_scans(filename, startscan=0, numscans=5000,
     return data[startscan:startscan+numscans]
 
 def glob_files(start_obs_num, date, source='allantest', roach_id=0):
-    files = glob.glob('/data_lmt/spectrometer/roach%1d/roach%1d_%s_0_0_%s_%s*.nc' % (roach_id, roach_id, str(start_obs_num)[0], source, date))
+    files = glob.glob('/data_lmt/spectrometer/roach%1d/roach%1d_%s*_0_0_%s_%s*.nc' % (roach_id, roach_id, str(start_obs_num)[0], source, date))
     return files
 
 def load_allan_nc_files(start_obs_num, numscans, date, source='allantest', roach_id=0):
