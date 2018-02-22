@@ -1,4 +1,4 @@
-from .file_utils import get_telnc_file
+from .file_utils import get_telnc_file, get_nc_file
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
 
 def do_Tsys_cal(obsnum, roach_id=0):
