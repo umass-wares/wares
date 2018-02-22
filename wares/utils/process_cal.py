@@ -12,8 +12,8 @@ def do_Tsys_cal(obsnum, roach_id=0):
     nc = WaresNetCDFFile(get_nc_file(obsnum, roach_id=roach_id))
     spechotind = numpy.logical_and(nc.hdu.data.time > hottime[0],
                                    nc.hdu.data.time < hottime[-1])
-    speccoldind = numpy.logical_and(nc.hdu.data.time > coldtime[0],
-                                    nc.hdu.data.time < coldtime[-1])
+    speccoldind = numpy.logical_and(nc.hdu.data.time > skytime[0],
+                                    nc.hdu.data.time < skytime[-1])
     hots = numpy.zeros((4, nc.hdu.data.Data.shape[1]))
     colds = numpy.zeros((4, nc.hdu.data.Data.shape[1]))
     yfac = numpy.zeros((4, nc.hdu.data.Data.shape[1]))
