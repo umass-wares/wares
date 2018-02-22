@@ -8,7 +8,7 @@ def do_Tsys_cal(obsnum, roach_id=0):
     hottime = telnc.hdu.data.TelTime[hotind]
     skytime = telnc.hdu.data.TelTime[skyind]
 
-    nc = WaresNetCDFFile(get_nc_file(obsbum, roach_id=roach_id))
+    nc = WaresNetCDFFile(get_nc_file(obsnum, roach_id=roach_id))
     spechotind = numpy.logical_and(nc.hdu.data.time > hottime[0],
                                    nc.hdu.data.time < hottime[-1])
     speccoldind = numpy.logical_and(nc.hdu.data.time > coldtime[0],
