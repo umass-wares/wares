@@ -16,7 +16,7 @@ def get_nc_file(obsnum, basepat='/data_lmt/spectrometer', roach_id=0,
 
 def get_telnc_file(obsnum, basepath='/data_lmt/ifproc',
                    most_recent=True):
-    glob_pattern = os.path.join(basepath, "ifproc_*_%d_*.nc" % obsnum)
+    glob_pattern = os.path.join(basepath, "ifproc_*_%06d_*.nc" % obsnum)
     if most_recent:
         return most_recent_file(glob_pattern)
     fnames = glob.glob(glob_pattern)
