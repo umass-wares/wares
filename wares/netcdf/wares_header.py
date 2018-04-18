@@ -4,7 +4,7 @@ from lmtheader import LMTHeader
 import numpy
 from netCDF4 import num2date, date2num
 import datetime
-
+from wares.utils.coordinates import sixty
 class WaresHeader(LMTHeader):
 
     def __init__(self, ncvariables=None, dimensions=None):
