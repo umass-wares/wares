@@ -23,7 +23,7 @@ class SpectrumIFProc():
         return numpy.interp(self.specTime, self.antTime, quantity)
         
     def combine_files(self):
-        self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos))
+        self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos)
         self.TelAzMap = self.interpolate(self.telnc.hdu.data.TelAzMap)
         self.TelElMap = self.interpolate(self.telnc.hdu.data.TelElMap)
         
