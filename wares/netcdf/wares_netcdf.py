@@ -109,9 +109,9 @@ class WaresNetCDFFile(LMTNetCDFFile):
             self._make_hdus()
         self.data_index = 0
         if self.nc.variables.has_key('Header.Dcs.ObsPgm'):
-            filetype = 'IFProc'
+            self.filetype = 'IFProc'
         else:
-            filetype = 'Wares'
+            self.filetype = 'Wares'
 
 #    def _populate_headers(self, variables, dimensions):
 
