@@ -6,6 +6,7 @@ with positional information
 from wares.utils.file_utils import get_telnc_file, get_nc_file
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
 import numpy
+from scipy.interpolate import interp1d
 
 class SpectrumIFProc():
     def __init__(self, obsnum):
@@ -20,7 +21,7 @@ class SpectrumIFProc():
         self.combine_files()
 
     def interpolate(self, quantity):
-        return numpy.interp(self.specTime, self.antTime, quantity)
+        return interp1d(self.antTime, quantity, bounds_error=False, fill_valie='extrapolate')(self.specTime)
         
     def combine_files(self):
         self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos).astype(numpy.int)
