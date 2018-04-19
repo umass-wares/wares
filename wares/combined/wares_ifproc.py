@@ -69,4 +69,23 @@ class SpectrumIFProc():
 
             self.onspec[inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
             
-            
+    def baseline(self, windows=[(-100, -50), (50, 100)], order=0,
+                 subtract=False):
+        self.windows = windows
+        for i, win in enumerate(self.windows):
+            c1, c2 = win
+            c1, c2 = sorted([c1, c2])
+            ind = numpy.logical_and(self.velocities >= c1, self.velocities <=c2)
+            if i == 0:
+                finalind = numpy.logical_or(ind, ind)
+            else:
+                finalind = numpy.logical_or(finalind, ind)
+        self.sigma = numpy.zeros(4)
+        for inp in range(4):
+            ind = numpy.where(finalind)
+            p = numpy.polyfit(self.velocities[ind], self.onspec[inp, :][ind], order)
+            self.onspec[inp, :] = self.onspec[inp, :] - numpy.polyval(p, self.velocities)
+            self.sigma[inp] = self.onspec[inp, :][ind].std()
+            if not subtract:
+                self.onspec[inp, :] = self.onspec[inp, :] + numpy.polyval(p, self.velocities)
+                              
