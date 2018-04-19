@@ -53,7 +53,7 @@ class SpectrumIFProc():
             onpixind = numpy.logical_and(onind, pixind)
 
             self.refspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
-            self.onspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            self.onspec[inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
             self.spectra[inp, :] = (self.onspec[inp, :] - self.refspec[inp, :])/self.refspec[inp, :]
 
     def process_on(self):
