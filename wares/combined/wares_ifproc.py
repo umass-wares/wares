@@ -90,7 +90,7 @@ class SpectrumIFProc():
                 self.spectra[inp, :] = self.spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
     def get_area(self, windows=[(-25, 25)]):
-        if not getattr(self, 'sigma'):
+        if not hasattr(self, 'sigma'):
             print "First obtain baseline"
             return
         for i, win in enumerate(windows):
