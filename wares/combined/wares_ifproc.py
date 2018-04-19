@@ -18,6 +18,7 @@ class SpectrumIFProc():
             print "ObsPgm not same in IFProc and WARES files"
         self.antTime = self.telnc.hdu.data.BasebandTime
         self.specTime = self.nc.hdu.data.time
+        self.numchannels = self.nc.hdu.header.get('Mode.numchannels')
         self.combine_files()
 
     def interpolate(self, quantity):
@@ -28,3 +29,21 @@ class SpectrumIFProc():
         self.TelAzMap = self.interpolate(self.telnc.hdu.data.TelAzMap)
         self.TelElMap = self.interpolate(self.telnc.hdu.data.TelElMap)
         
+    def do_ps(self):
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'Ps':
+            print "Not a PS scan"
+            return
+        refind = self.BufPos == 1
+        onind = self.BufPos == 0
+        
+        self.spectra = numpy.zeros((4, self.numchannels))
+        for inp in range(4):
+            pixind = self.nc.hdu.data.Inputs == inp
+            refpixind = numpy.logical_and(refind, pixind)
+            onpixind = numpy.logical_and(onind, pixind)
+
+            refspec = nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            onspec = nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            self.spectra[inp, :] = (onspec - refspec)/refspec
+            
+            
