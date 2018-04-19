@@ -21,7 +21,7 @@ class SpectrumIFProc():
         self.combine_files()
 
     def interpolate(self, quantity):
-        return interp1d(self.antTime, quantity, bounds_error=False, fill_valie='extrapolate')(self.specTime)
+        return interp1d(self.antTime, quantity, bounds_error=False, fill_value='extrapolate')(self.specTime)
         
     def combine_files(self):
         self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos).astype(numpy.int)
