@@ -84,8 +84,8 @@ class SpectrumIFProc():
         self.sigma = numpy.zeros(4)
         for inp in range(4):
             ind = numpy.where(finalind)
-
             p = numpy.polyfit(self.velocities[ind], self.spectra[inp, :][ind], order)
+            print p
             self.spectra[inp, :] = self.spectra[inp, :] - numpy.polyval(p, self.velocities)
             self.sigma[inp] = self.spectra[inp, :][ind].std()
             if not subtract:
