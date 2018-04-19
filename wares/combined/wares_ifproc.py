@@ -82,12 +82,35 @@ class SpectrumIFProc():
                 finalind = numpy.logical_or(finalind, ind)
         print self.velocities[finalind]                
         self.sigma = numpy.zeros(4)
+        ind = numpy.where(finalind)
         for inp in range(4):
-            ind = numpy.where(finalind)
             p = numpy.polyfit(self.velocities[ind], self.spectra[inp, :][ind], order)
-            print p
             self.spectra[inp, :] = self.spectra[inp, :] - numpy.polyval(p, self.velocities)
             self.sigma[inp] = self.spectra[inp, :][ind].std()
             if not subtract:
                 self.spectra[inp, :] = self.spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
+    def get_area(self, windows=[(-25, 25)]):
+        if not getattr(self, sigma):
+            print "First obtain baseline"
+            return
+        for i, win in enumerate(windows):
+            c1, c2 = win
+            c1, c2 = sorted([c1, c2])
+            ind = numpy.logical_and(self.velocities >= c1, self.velocities <=c2)
+            if i == 0:
+                finalind = numpy.logical_or(ind, ind)
+            else:
+                finalind = numpy.logical_or(finalind, ind)
+        deltav = numpy.abs(self.velocities[1] - self.velocities[0])
+        self.area = numpy.zeros(4)
+        self.area_uncertainty = numpy.zeros(4)
+        ind = numpy.where(finalind)
+        N = ind[0].size
+        for inp in range(4):
+            self.area[inp] = self.spectra[inp, :][ind].sum() * deltav
+            self.area_uncertainty[inp] = self.sigma[inp] * deltav * numpy.sqrt(N)
+
+            
+            
+            
