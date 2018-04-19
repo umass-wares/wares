@@ -55,5 +55,18 @@ class SpectrumIFProc():
             self.refspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
             self.onspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
             self.spectra[inp, :] = (self.onspec[inp, :] - self.refspec[inp, :])/self.refspec[inp, :]
+
+    def process_on(self):
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'On':
+            print "Not a ON scan"
+            return
+        onind = self.BufPos == 0
+        
+        self.onspec = numpy.zeros((4, self.numchannels))
+        for inp in range(4):
+            pixind = self.nc.hdu.data.Inputs == inp
+            onpixind = numpy.logical_and(onind, pixind)
+
+            self.onspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
             
             
