@@ -37,13 +37,15 @@ class SpectrumIFProc():
         onind = self.BufPos == 0
         
         self.spectra = numpy.zeros((4, self.numchannels))
+        self.refspec = numpy.zeros((4, self.numchannels))
+        self.onspec = numpy.zeros((4, self.numchannels))
         for inp in range(4):
             pixind = self.nc.hdu.data.Inputs == inp
             refpixind = numpy.logical_and(refind, pixind)
             onpixind = numpy.logical_and(onind, pixind)
 
-            refspec = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
-            onspec = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
-            self.spectra[inp, :] = (onspec - refspec)/refspec
+            self.refspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            self.onspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            self.spectra[inp, :] = (self.onspec[inp, :] - self.refspec[inp, :])/self.refspec[inp, :]
             
             
