@@ -80,12 +80,14 @@ class SpectrumIFProc():
                 finalind = numpy.logical_or(ind, ind)
             else:
                 finalind = numpy.logical_or(finalind, ind)
+        print self.velocities[finalind]                
         self.sigma = numpy.zeros(4)
         for inp in range(4):
             ind = numpy.where(finalind)
-            p = numpy.polyfit(self.velocities[ind], self.onspec[inp, :][ind], order)
-            self.onspec[inp, :] = self.onspec[inp, :] - numpy.polyval(p, self.velocities)
-            self.sigma[inp] = self.onspec[inp, :][ind].std()
+
+            p = numpy.polyfit(self.velocities[ind], self.spectra[inp, :][ind], order)
+            self.spectra[inp, :] = self.spectra[inp, :] - numpy.polyval(p, self.velocities)
+            self.sigma[inp] = self.spectra[inp, :][ind].std()
             if not subtract:
-                self.onspec[inp, :] = self.onspec[inp, :] + numpy.polyval(p, self.velocities)
+                self.spectra[inp, :] = self.spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
