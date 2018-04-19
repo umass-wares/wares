@@ -67,6 +67,6 @@ class SpectrumIFProc():
             pixind = self.nc.hdu.data.Inputs == inp
             onpixind = numpy.logical_and(onind, pixind)
 
-            self.onspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+            self.onspec[inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
             
             
