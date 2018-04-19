@@ -80,7 +80,6 @@ class SpectrumIFProc():
                 finalind = numpy.logical_or(ind, ind)
             else:
                 finalind = numpy.logical_or(finalind, ind)
-        print self.velocities[finalind]                
         self.sigma = numpy.zeros(4)
         ind = numpy.where(finalind)
         for inp in range(4):
@@ -91,7 +90,7 @@ class SpectrumIFProc():
                 self.spectra[inp, :] = self.spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
     def get_area(self, windows=[(-25, 25)]):
-        if not getattr(self, sigma):
+        if not getattr(self, 'sigma'):
             print "First obtain baseline"
             return
         for i, win in enumerate(windows):
