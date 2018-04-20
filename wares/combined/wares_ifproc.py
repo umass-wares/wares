@@ -140,7 +140,7 @@ class SpectrumIFProc():
             self.area_uncertainty[inp] = self.combined_sigma[inp] * deltav * numpy.sqrt(N)
 
     def process_spectral_map(self, channels=[500, 1500]):
-        if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous')
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
         else:
