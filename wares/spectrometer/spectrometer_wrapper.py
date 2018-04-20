@@ -77,6 +77,9 @@ class SpectrometerWrapper(object):
         logger.info("Setting Frequency to: %s MHz" % valon.get_frequency(SYNTH_A))
         mode_fn = getattr(spec_modes, 'mode_%d' % mode)
         mode_obj = mode_fn()
+        if dump_time < 0.040:
+            logger.info("Dump time %s specified. Cannot be smaller than 0.04 seconds. Resetting to 0.04 seconds" % dump_time)
+            dump_time = 0.04
         scale = self.calc_scale(dump_time, mode_obj)
         self.spec.sync_scale = scale
         self.spec.mode_setup(mode=mode)
