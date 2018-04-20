@@ -57,8 +57,8 @@ class SpectrumIFProc():
             refind_end = bufind_edges[2*rpt + 1] - 2 
             onind_start = bufind_edges[2*rpt+1] + 2
             onind_end = bufind_edges[2*(rpt+1)] - 2
-            refind = numpy.zeros(comb.BufPos.size, dtype=numpy.bool)
-            onind = numpy.zeros(comb.BufPos.size, dtype=numpy.bool)
+            refind = numpy.zeros(self.BufPos.size, dtype=numpy.bool)
+            onind = numpy.zeros(self.BufPos.size, dtype=numpy.bool)
             refind[refind_start:refind_end] = True
             onind[onind_start:onind_end] = True
             for inp in range(4):
