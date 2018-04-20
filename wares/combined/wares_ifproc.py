@@ -151,9 +151,8 @@ class SpectrumIFProc():
         if maptype == 'Lissajous':
             xlength = xlength/numpy.cos(numpy.radians(45))
             xlength = ylength/numpy.cos(numpy.radians(45))
-        ind = numpy.where(self.BufPos == 0)
-        xpos = numpy.degrees(self.TelAzMap[ind])*3600.
-        ypos = numpy.degrees(self.TelElMap[ind])*3600.
+        xpos = numpy.degrees(self.TelAzMap)*3600.
+        ypos = numpy.degrees(self.TelElMap)*3600.
         rows = self.telnc.hdu.header.get('Map.RowsPerScan')                             
         outsideind = numpy.zeros(self.TelAzMap.size, dtype=numpy.bool)
         outsideind[:100] = True
@@ -174,5 +173,22 @@ class SpectrumIFProc():
             offspec = offspectra[inp, :]
             offspec.shape = (1, 1, self.numchannels)
             self.onoffspectra[inp, :, :] = onspectra[inp, :, :] - offspec
-        
 
+    def process_pointing_spectral_map(self, linewindows=[(-17, 17),]):
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
+            print "Not a Map scan"
+            return            
+        else:
+            maptype = self.telnc.hdu.header.get('Dcs.ObsPgm')
+        numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
+        bias = numpy.zeros((numpixels, self.numchannels))
+        numdumps = self.BufPos.size/4
+        self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
+        for inp in range(numpixels):
+            pixind = self.nc.hdu.data.Inputs == 0
+            pixspectra = self.nc.hdu.data.Data[pixind, :]
+            bias[inp, :] = numpy.median(pixspectra, axis=0)
+            bias[inp, :].shape = (1, self.numchannels)
+            pixspectra = pixspectra - bias[inp, :]
+            self.all_spectra[inp, :, :] = pixspectra
+        
