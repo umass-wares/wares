@@ -139,6 +139,40 @@ class SpectrumIFProc():
             self.area[inp] = self.combined_spectra[inp, :][ind].sum() * deltav
             self.area_uncertainty[inp] = self.combined_sigma[inp] * deltav * numpy.sqrt(N)
 
-            
-            
-            
+    def process_spectral_map(self, channels=[500, 1500]):
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous')
+            print "Not a Map scan"
+            return            
+        else:
+            maptype = self.telnc.hdu.header.get('Dcs.ObsPgm')
+        numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]             
+        xlength = numpy.degrees(self.telnc.hdu.header.get('%s.XLength' % maptype))*3600.0
+        ylength = numpy.degrees(self.telnc.hdu.header.get('%s.YLength' % maptype))*3600.0
+        if maptype == 'Lissajous':
+            xlength = xlength/numpy.cos(numpy.radians(45))
+            xlength = ylength/numpy.cos(numpy.radians(45))
+        ind = numpy.where(self.BufPos == 0)
+        xpos = numpy.degrees(self.TelAzMap[ind])*3600.
+        ypos = numpy.degrees(self.TelElMap[ind])*3600.
+        rows = self.telnc.hdu.header.get('Map.RowsPerScan')                             
+        outsideind = numpy.zeros(self.TelAzMap.size, dtype=numpy.bool)
+        outsideind[:100] = True
+        outsideind[-100:] = True # take outer region
+        offspectra = numpy.zeros((numpixels, self.numchannels))
+        for inp in range(numpixels):
+            pixind = self.nc.hdu.data.Inputs == inp
+            offind = numpy.logical_and(outsideind, pixind)
+            offspectra[inp, :] = self.nc.hdu.data.Data[offind, :].mean(axis=0)
+        chan_start, chan_end = channels
+        onspectra = numpy.zeros((numpixels, self.TelAzMap.size/4, self.numchannels))
+        self.onoffspectra = numpy.zeros((numpixels, self.TelAzMap.size/4, self.numchannels))
+        for inp in range(numpixels):
+            pixind = self.nc.hdu.data.Inputs == inp
+            onspectra[inp, :, :] = self.nc.hdu.data.Data[pixind, :]
+            self.xpos = xpos[pixind]
+            self.ypos = ypos[pixind]
+            offspec = offspectra[inp, :]
+            offspec.shape = (1, 1, self.numchannels)
+            self.onoffspectra[inp, :, :] = onspectra[inp, :, :] - offspec
+        
+
