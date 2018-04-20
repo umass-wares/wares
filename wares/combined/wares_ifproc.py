@@ -41,20 +41,34 @@ class SpectrumIFProc():
         if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'Ps':
             print "Not a PS scan"
             return
-        refind = self.BufPos == 1
-        onind = self.BufPos == 0
-        
-        self.spectra = numpy.zeros((4, self.numchannels))
-        self.refspec = numpy.zeros((4, self.numchannels))
-        self.onspec = numpy.zeros((4, self.numchannels))
-        for inp in range(4):
-            pixind = self.nc.hdu.data.Inputs == inp
-            refpixind = numpy.logical_and(refind, pixind)
-            onpixind = numpy.logical_and(onind, pixind)
+        num_repeats = self.telnc.hdu.header.get('Ps.NumRepeats')
+        bufind_edges = list(numpy.where(numpy.diff(self.BufPos) != 0)[0])
+        bufind_edges.insert(0, 0)
+        bufind_edges.append(bufind_edges[-1] + 50000)
+        #refind = self.BufPos == 1
+        #onind = self.BufPos == 0
 
-            self.refspec[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
-            self.onspec[inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
-            self.spectra[inp, :] = (self.onspec[inp, :] - self.refspec[inp, :])/self.refspec[inp, :]
+        
+        self.spectra = numpy.zeros((num_repeats, 4, self.numchannels))
+        self.refspec = numpy.zeros((num_repeats, 4, self.numchannels))
+        self.onspec = numpy.zeros((num_repeats, 4, self.numchannels))
+        for rpt in range(num_repeats):
+            refind_start = bufind_edges[2*rpt] + 2 
+            refind_end = bufind_edges[2*rpt + 1] - 2 
+            onind_start = bufind_edges[2*rpt+1] + 2
+            onind_end = bufind_edges[2*(rpt+1)] - 2
+            refind = numpy.zeros(comb.BufPos.size, dtype=numpy.bool)
+            onind = numpy.zeros(comb.BufPos.size, dtype=numpy.bool)
+            refind[refind_start:refind_end] = True
+            onind[onind_start:onind_end] = True
+            for inp in range(4):
+                pixind = self.nc.hdu.data.Inputs == inp
+                refpixind = numpy.logical_and(refind, pixind)
+                onpixind = numpy.logical_and(onind, pixind)
+                self.refspec[rpt, inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+                self.onspec[rpt, inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
+                self.spectra[rpt, inp, :] = (self.onspec[rpt, inp, :] - self.refspec[rpt, inp, :])/self.refspec[rpt, inp, :]
+        
 
     def process_on(self):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'On':
