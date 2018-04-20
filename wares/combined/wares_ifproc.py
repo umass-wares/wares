@@ -12,6 +12,7 @@ class SpectrumIFProc():
     def __init__(self, obsnum):
         self.nc = WaresNetCDFFile(get_nc_file(obsnum))
         self.telnc = WaresNetCDFFile(get_telnc_file(obsnum))
+        self.obsnum = obsnum
         if self.telnc.hdu.header.SourceName != self.nc.hdu.header.get('Telescope.source_name'):
             print "Source Name not same in IFProc and WARES files"
         if self.telnc.hdu.header.ObsPgm != self.nc.hdu.header.get('Telescope.obspgm'):
@@ -98,17 +99,27 @@ class SpectrumIFProc():
                 finalind = numpy.logical_or(ind, ind)
             else:
                 finalind = numpy.logical_or(finalind, ind)
-        self.sigma = numpy.zeros(4)
+        num_repeats = self.telnc.hdu.header.get('Ps.NumRepeats')
+        self.sigma = numpy.zeros((num_repeats, 4))
+        self.combined_sigma = numpy.zeros(4)
         ind = numpy.where(finalind)
+        for rpt in range(num_repeats):
+            for inp in range(4):
+                p = numpy.polyfit(self.velocities[ind], self.spectra[rpt, inp, :][ind], order)
+                self.spectra[rpt, inp, :] = self.spectra[rpt, inp, :] - numpy.polyval(p, self.velocities)
+                self.sigma[rpt, inp] = self.spectra[rpt, inp, :][ind].std()
+                if not subtract:
+                    self.spectra[rpt, inp, :] = self.spectra[rpt, inp, :] + numpy.polyval(p, self.velocities)
         for inp in range(4):
-            p = numpy.polyfit(self.velocities[ind], self.spectra[inp, :][ind], order)
-            self.spectra[inp, :] = self.spectra[inp, :] - numpy.polyval(p, self.velocities)
-            self.sigma[inp] = self.spectra[inp, :][ind].std()
+            #self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
+            p = numpy.polyfit(self.velocities[ind], self.combined_spectra[inp, :][ind], order)
+            self.combined_spectra[inp, :] = self.combined_spectra[inp, :] - numpy.polyval(p, self.velocities)
+            self.combined_sigma[inp] = self.combined_spectra[inp, :][ind].std()
             if not subtract:
-                self.spectra[inp, :] = self.spectra[inp, :] + numpy.polyval(p, self.velocities)
+                self.combined_spectra[inp, :] = self.combined_spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
     def get_area(self, windows=[(-25, 25)]):
-        if not hasattr(self, 'sigma'):
+        if not hasattr(self, 'combined_sigma'):
             print "First obtain baseline"
             return
         for i, win in enumerate(windows):
@@ -125,8 +136,8 @@ class SpectrumIFProc():
         ind = numpy.where(finalind)
         N = ind[0].size
         for inp in range(4):
-            self.area[inp] = self.spectra[inp, :][ind].sum() * deltav
-            self.area_uncertainty[inp] = self.sigma[inp] * deltav * numpy.sqrt(N)
+            self.area[inp] = self.combined_spectra[inp, :][ind].sum() * deltav
+            self.area_uncertainty[inp] = self.combined_sigma[inp] * deltav * numpy.sqrt(N)
 
             
             
