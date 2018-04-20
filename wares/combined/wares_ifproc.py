@@ -174,7 +174,10 @@ class SpectrumIFProc():
             offspec.shape = (1, 1, self.numchannels)
             self.onoffspectra[inp, :, :] = onspectra[inp, :, :] - offspec
 
-    def process_pointing_spectral_map(self, linewindows=[(-17, 17),]):
+    def process_pointing_spectral_map(self, windows=[(-100, -50), (50, 100)],
+                                      order=1,
+                                      subtract=True, 
+                                      linewindows=[(-17, 17),]):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
@@ -195,7 +198,23 @@ class SpectrumIFProc():
             self.xpos[inp, :] = self.TelAzMap[pixind]
             self.ypos[inp, :] = self.TelElMap[pixind]
             self.all_spectra[inp, :, :] = pixspectra
-            
+
+
+        self.windows = windows
+        for i, win in enumerate(self.windows):
+            c1, c2 = win
+            c1, c2 = sorted([c1, c2])
+            ind = numpy.logical_and(self.velocities >= c1, self.velocities <=c2)
+            if i == 0:
+                finalind = numpy.logical_or(ind, ind)
+            else:
+                finalind = numpy.logical_or(finalind, ind)
+        ind = numpy.where(finalind)
+        for inp in range(4):
+            for ipos in range(numdumps):
+                p = numpy.polyfit(self.velocities[ind], self.all_spectra[inp, ipos, :][ind], order)
+                self.all_spectra[inp, ipos, :] = self.spectra[inp, ipos, :] - numpy.polyval(p, self.velocities)
+                
         for i, win in enumerate(linewindows):
             c1, c2 = win
             c1, c2 = sorted([c1, c2])
@@ -204,6 +223,7 @@ class SpectrumIFProc():
                 finalind = numpy.logical_or(ind, ind)
             else:
                 finalind = numpy.logical_or(finalind, ind)
+
         deltav = numpy.abs(self.velocities[1] - self.velocities[0])
         self.specarea = numpy.zeros((numpixels, numdumps))
         ind = numpy.where(finalind)
