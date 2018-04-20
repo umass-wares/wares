@@ -191,7 +191,7 @@ class SpectrumIFProc():
             pixspectra = self.nc.hdu.data.Data[pixind, :]
             self.bias[inp, :] = numpy.median(pixspectra, axis=0)
             self.bias[inp, :].shape = (1, self.numchannels)
-            pixspectra = pixspectra - self.bias[inp, :]
+            pixspectra = (pixspectra - self.bias[inp, :])/self.bias[inp, :]
             self.xpos[inp, :] = self.TelAzMap[pixind]
             self.ypos[inp, :] = self.TelElMap[pixind]
             self.all_spectra[inp, :, :] = pixspectra
