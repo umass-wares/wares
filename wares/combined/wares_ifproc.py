@@ -195,4 +195,19 @@ class SpectrumIFProc():
             self.xpos[inp, :] = self.TelAzMap[pixind]
             self.ypos[inp, :] = self.TelElMap[pixind]
             self.all_spectra[inp, :, :] = pixspectra
+            
+        for i, win in enumerate(linewindows):
+            c1, c2 = win
+            c1, c2 = sorted([c1, c2])
+            ind = numpy.logical_and(self.velocities >= c1, self.velocities <=c2)
+            if i == 0:
+                finalind = numpy.logical_or(ind, ind)
+            else:
+                finalind = numpy.logical_or(finalind, ind)
+        deltav = numpy.abs(self.velocities[1] - self.velocities[0])
+        self.specarea = numpy.zeros((numpixels, numdumps))
+        ind = numpy.where(finalind)
+        for inp in range(4):
+            self.specarea[inp] = self.all_spectra[inp, :, ind].sum(axis=1) * deltav
+
         
