@@ -52,6 +52,7 @@ class SpectrumIFProc():
         self.spectra = numpy.zeros((num_repeats, 4, self.numchannels))
         self.refspec = numpy.zeros((num_repeats, 4, self.numchannels))
         self.onspec = numpy.zeros((num_repeats, 4, self.numchannels))
+        self.combined_spectra = numpy.zeros((4, self.numchannels))
         for rpt in range(num_repeats):
             refind_start = bufind_edges[2*rpt] + 2 
             refind_end = bufind_edges[2*rpt + 1] - 2 
@@ -68,6 +69,9 @@ class SpectrumIFProc():
                 self.refspec[rpt, inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
                 self.onspec[rpt, inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
                 self.spectra[rpt, inp, :] = (self.onspec[rpt, inp, :] - self.refspec[rpt, inp, :])/self.refspec[rpt, inp, :]
+        for inp in range(4):
+            self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
+
         
 
     def process_on(self):
