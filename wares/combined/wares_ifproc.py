@@ -213,7 +213,7 @@ class SpectrumIFProc():
         for inp in range(4):
             for ipos in range(numdumps):
                 p = numpy.polyfit(self.velocities[ind], self.all_spectra[inp, ipos, :][ind], order)
-                self.all_spectra[inp, ipos, :] = self.spectra[inp, ipos, :] - numpy.polyval(p, self.velocities)
+                self.all_spectra[inp, ipos, :] = self.all_spectra[inp, ipos, :] - numpy.polyval(p, self.velocities)
                 
         for i, win in enumerate(linewindows):
             c1, c2 = win
