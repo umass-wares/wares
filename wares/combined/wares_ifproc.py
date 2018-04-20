@@ -184,11 +184,15 @@ class SpectrumIFProc():
         bias = numpy.zeros((numpixels, self.numchannels))
         numdumps = self.BufPos.size/4
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
+        self.xpos = numpy.zeros((numpixels, numdumps))
+        self.ypos = numpy.zeros((numpixels, numdumps))
         for inp in range(numpixels):
             pixind = self.nc.hdu.data.Inputs == 0
             pixspectra = self.nc.hdu.data.Data[pixind, :]
             bias[inp, :] = numpy.median(pixspectra, axis=0)
             bias[inp, :].shape = (1, self.numchannels)
             pixspectra = pixspectra - bias[inp, :]
+            self.xpos[inp, :] = self.TelAzMap[pixind]
+            self.ypos[inp, :] = self.TelElMap[pixind]
             self.all_spectra[inp, :, :] = pixspectra
         
