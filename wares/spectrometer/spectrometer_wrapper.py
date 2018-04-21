@@ -135,6 +135,7 @@ class SpectrometerWrapper(object):
         #self.spec.save_all_scans()
         if self.spec.nc is not None:
             self.spec.close_scan()
-
+        else:
+            logger.info("No NC file to close")
 
         
