@@ -6,7 +6,7 @@ def nanmean(array):
     nan numbers"""
     return array[numpy.isfinite(array)].mean()
 
-def plot_map(self, comb, 
+def plot_map(comb, 
              pixel=2,
              average=False,
              limits = None,
