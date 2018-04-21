@@ -33,3 +33,4 @@ def plot_map(comb,
             return 'x=%1.4f, y=%1.4f, z=%1.4f' % (x, y, zzz)
         plt.xlim(limits[0], limits[1])
         plt.ylim(limits[2], limits[3])
+        plt.draw()
