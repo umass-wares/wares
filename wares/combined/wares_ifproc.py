@@ -258,7 +258,7 @@ class SpectrumIFProc():
         hotind = self.BufPos == 3
         skyind = self.BufPos == 2
         for inp in range(numpixels):
-            pixind = nc.hdu.data.Inputs == inp
+            pixind = self.nc.hdu.data.Inputs == inp
             indexh = numpy.logical_and(hotind, pixind)
             indexs = numpy.logical_and(skyind, pixind)
             hotspec = self.nc.hdu.data.Data[indexh, :].mean(axis=0)
