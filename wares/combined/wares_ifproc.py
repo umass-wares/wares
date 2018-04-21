@@ -230,4 +230,16 @@ class SpectrumIFProc():
         for inp in range(4):
             self.specarea[inp] = self.all_spectra[inp, :, ind].sum(axis=1) * deltav
 
+        self.xi = numpy.zeros((4, 100))
+        self.yi = numpy.zeros((4, 100))
+        self.BeamMap = numpy.zeros((4, 100, 100))
+        for inp in range(4):
+            xpos = numpy.degrees(self.xpos[inp, :])*3600
+            ypos = numpy.degrees(self.ypos[inp, :])*3600
+            xmin, xmax = xpos.min(), xpos.max()
+            ymin, ymax = ypos.min(), ypos.max()
+            self.xi[inp, :] = numpy.linspace(xmin, xmax, 100)
+            self.yi[inp, :] = numpy.linspace(ymin, ymax, 100)
+            self.BeamMap[inp, :, :] = griddata(xpos, ypos, self.specarea[inp], self.xi[inp], self.yi[inp])
         
+            
