@@ -16,16 +16,16 @@ def plot_map(comb,
              subtract=False, 
 ):
         if limits is None:
-            limits = [comb.xi.min(), comb.xi.max(), comb.yi.min(), comb.yi.max()]
+            limits = [comb.xi[pixel].min(), comb.xi[pixel].max(), comb.yi[pixel].min(), comb.yi[pixel].max()]
         zi = comb.BeamMap[pixel]
         if subtract:
             tmparr = zi.flatten()
             baseline =numpy.median(tmparr[numpy.isfinite(tmparr)])
             zi = zi - baseline
-        cs = plt.contour(comb.xi, comb.yi, zi, nlevels, linewidths=0.5, colors='k')
-        cs = plt.contourf(comb.xi, comb.yi, zi, nlevels, cmap=cmap)
+        cs = plt.contour(comb.xi[pixel], comb.yi[pixel], zi, nlevels, linewidths=0.5, colors='k')
+        cs = plt.contourf(comb.xi[pixel], comb.yi[pixel], zi, nlevels, cmap=cmap)
         plt.colorbar()
-        X, Y = numpy.meshgrid(comb.xi, comb.yi)
+        X, Y = numpy.meshgrid(comb.xi[pixel], comb.yi[pixel])
         def format_coord(x, y):
             ind = numpy.logical_and(numpy.abs(X-x)<stepsize,
                                     numpy.abs(Y-y)<stepsize)
