@@ -177,7 +177,7 @@ class SpectrumIFProc():
     def process_pointing_spectral_map(self, windows=[(-100, -50), (50, 100)],
                                       order=1,
                                       subtract=True, 
-                                      linewindows=[(-17, 17),]):
+                                      linewindows=[(-10, 10),]):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
@@ -185,12 +185,12 @@ class SpectrumIFProc():
             maptype = self.telnc.hdu.header.get('Dcs.ObsPgm')
         numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
         self.bias = numpy.zeros((numpixels, self.numchannels))
-        numdumps = self.BufPos.size/4
+        numdumps = self.BufPos.size/numpixels
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
         self.xpos = numpy.zeros((numpixels, numdumps))
         self.ypos = numpy.zeros((numpixels, numdumps))
         for inp in range(numpixels):
-            pixind = self.nc.hdu.data.Inputs == 0
+            pixind = self.nc.hdu.data.Inputs == inp
             pixspectra = self.nc.hdu.data.Data[pixind, :]
             self.bias[inp, :] = numpy.median(pixspectra, axis=0)
             self.bias[inp, :].shape = (1, self.numchannels)
