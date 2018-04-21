@@ -1,6 +1,6 @@
 import numpy
 from matplotlib import pyplot as plt
-
+from matplotlib import cm
 def nanmean(array):
     """Returns the mean of an array after ignoring the
     nan numbers"""
