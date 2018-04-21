@@ -37,4 +37,5 @@ def plot_map(comb,
     ax.format_coord = format_coord
     plt.xlim(limits[0], limits[1])
     plt.ylim(limits[2], limits[3])
+    plt.title('%d: Source %s' % (comb.ObsNum, comb.telnc.hdu.header.get('Source.SourceName')))
     plt.draw()
