@@ -181,7 +181,7 @@ class SpectrumIFProc():
                                       subtract=True,
                                       num_imagepixels=200,
                                       linewindows=[(-10, 10),],
-                                      medfilt=False):
+                                      median_filter=False):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
@@ -233,7 +233,7 @@ class SpectrumIFProc():
         ind = numpy.where(finalind)
         for inp in range(4):
             self.specarea[inp] = self.all_spectra[inp, :, ind].sum(axis=1) * deltav
-            if medfilt:
+            if median_filter:
                 self.specarea[inp] = medfilt(self.specarea[inp])
             
         self.xi = numpy.zeros((4, num_imagepixels))
