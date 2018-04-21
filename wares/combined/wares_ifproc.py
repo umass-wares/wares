@@ -181,7 +181,7 @@ class SpectrumIFProc():
                                       subtract=True,
                                       num_imagepixels=200,
                                       linewindows=[(-10, 10),],
-                                      median_filter=False):
+                                      median_filter=True):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
