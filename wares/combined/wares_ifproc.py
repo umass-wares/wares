@@ -8,6 +8,7 @@ from wares.netcdf.wares_netcdf import WaresNetCDFFile
 import numpy
 from scipy.interpolate import interp1d
 from matplotlib.mlab import griddata
+from scipy.signal import medfilt
 
 class SpectrumIFProc():
     def __init__(self, obsnum):
@@ -179,7 +180,8 @@ class SpectrumIFProc():
                                       order=1,
                                       subtract=True,
                                       num_imagepixels=200,
-                                      linewindows=[(-10, 10),]):
+                                      linewindows=[(-10, 10),],
+                                      medfilt=False):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
             return            
@@ -231,7 +233,9 @@ class SpectrumIFProc():
         ind = numpy.where(finalind)
         for inp in range(4):
             self.specarea[inp] = self.all_spectra[inp, :, ind].sum(axis=1) * deltav
-
+            if medfilt:
+                self.specarea[inp] = medfilt(self.specarea[inp])
+            
         self.xi = numpy.zeros((4, num_imagepixels))
         self.yi = numpy.zeros((4, num_imagepixels))
         self.BeamMap = numpy.zeros((4, num_imagepixels, num_imagepixels))
