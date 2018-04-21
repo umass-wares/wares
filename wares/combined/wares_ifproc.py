@@ -7,6 +7,7 @@ from wares.utils.file_utils import get_telnc_file, get_nc_file
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
 import numpy
 from scipy.interpolate import interp1d
+from matplotlib.mlab import griddata
 
 class SpectrumIFProc():
     def __init__(self, obsnum):
