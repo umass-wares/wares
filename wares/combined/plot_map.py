@@ -33,6 +33,8 @@ def plot_map(comb,
                                 numpy.abs(Y-y)<stepsize)
         zzz = nanmean(zi[ind])
         return 'x=%1.4f, y=%1.4f, z=%1.4f' % (x, y, zzz)
+    ax = plt.gca()
+    ax.format_coord = format_coord
     plt.xlim(limits[0], limits[1])
     plt.ylim(limits[2], limits[3])
     plt.draw()
