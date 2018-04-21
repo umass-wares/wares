@@ -133,7 +133,8 @@ class SpectrometerWrapper(object):
     
     def close(self):
         #self.spec.save_all_scans()
-        self.spec.close_scan()
+        if self.spec.nc is not None:
+            self.spec.close_scan()
 
 
         
