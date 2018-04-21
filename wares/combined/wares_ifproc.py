@@ -254,7 +254,7 @@ class SpectrumIFProc():
             return
         numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
         self.tsys_spec = numpy.zeros((numpixels, self.numchannels))
-        self.tsys = numpy.zero(numpixels)
+        self.tsys = numpy.zeros(numpixels)
         hotind = self.BufPos == 3
         skyind = self.BufPos == 2
         for inp in range(numpixels):
