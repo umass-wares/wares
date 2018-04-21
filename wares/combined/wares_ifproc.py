@@ -18,7 +18,7 @@ class SpectrumIFProc():
         if self.telnc.hdu.header.ObsPgm != self.nc.hdu.header.get('Telescope.obspgm'):
             print "ObsPgm not same in IFProc and WARES files"
         self.antTime = self.telnc.hdu.data.BasebandTime - self.telnc.hdu.data.BasebandTime[0]
-        self.specTime = self.nc.hdu.data.time - self.spec.nc.hdu.data.time[0]
+        self.specTime = self.nc.hdu.data.time - self.nc.hdu.data.time[0]
         self.numchannels = self.nc.hdu.header.get('Mode.numchannels')
         self.populate_spectral_xaxis()
         self.combine_files()
