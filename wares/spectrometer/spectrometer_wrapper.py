@@ -122,8 +122,10 @@ class SpectrometerWrapper(object):
 
     def stop(self):
         self.integration_active = False
-        self.consumer_thread.join()
-        self.integrate_thread.join()
+        if hasattr(self, 'consumer_thread'):
+            self.consumer_thread.join()
+        if hasattr(self, 'integrate_thread'):
+            self.integrate_thread.join()
 
     def snapshot(self):
         self.spec.snapshot_file_all(roach_num=self.roach_id, obsnum=self.ObsNum)

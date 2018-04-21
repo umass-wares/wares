@@ -248,4 +248,21 @@ class SpectrumIFProc():
             self.yi[inp, :] = numpy.linspace(ymin, ymax, num_imagepixels)
             self.BeamMap[inp, :, :] = griddata(xpos, ypos, self.specarea[inp], self.xi[inp], self.yi[inp])
         
-            
+    def process_spectral_cal(self, Tamb=280):
+        if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Cal'):
+            print "Not a Map scan"
+            return
+        numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
+        self.tsys_spec = numpy.zeros((numpixels, self.numchannels))
+        self.tsys = numpy.zero(numpixels)
+        hotind = self.BufPos == 3
+        skyind = self.BufPos == 2
+        for inp in range(numpixels):
+            pixind = nc.hdu.data.Inputs == inp
+            indexh = numpy.logical_and(hotind, pixind)
+            indexs = numpy.logical_and(skyind, pixind)
+            hotspec = self.nc.hdu.data.Data[indexh, :].mean(axis=0)
+            skyspec = self.nc.hdu.data.Data[indexs, :].mean(axis=0)
+            self.tsys_spec[inp, :] = Tamb * skyspec/(hotspec - skyspec)
+            self.tsys[inp] = self.tsys_spec[inp, 100: 2048-100].mean()
+            print "Pixel: %d, Tsys: %.3f K" % (inp, self.tsys[inp])
