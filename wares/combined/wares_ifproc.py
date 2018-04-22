@@ -185,6 +185,7 @@ class SpectrumIFProc():
                                       median_filter=True):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
+
             return            
         else:
             maptype = self.telnc.hdu.header.get('Dcs.ObsPgm')
@@ -280,8 +281,8 @@ class SpectrumIFProc():
             pixind = self.nc.hdu.data.Inputs == inp
             indexh = numpy.logical_and(hotind, pixind)
             indexs = numpy.logical_and(skyind, pixind)
-            hotspec = self.nc.hdu.data.Data[indexh, :].mean(axis=0)
-            skyspec = self.nc.hdu.data.Data[indexs, :].mean(axis=0)
+            hotspec = medfilt(self.nc.hdu.data.Data[indexh, :].mean(axis=0))
+            skyspec = medfilt(self.nc.hdu.data.Data[indexs, :].mean(axis=0))
             self.tsys_spec[inp, :] = Tamb * skyspec/(hotspec - skyspec)
             self.tsys[inp] = self.tsys_spec[inp, 100: 2048-100].mean()
             print "Pixel: %d, Tsys: %.3f K" % (inp, self.tsys[inp])
