@@ -192,18 +192,32 @@ class SpectrumIFProc():
         numdumps = self.BufPos.size/numpixels
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
         self.xpos = numpy.zeros((numpixels, numdumps))
-        self.ypos = numpy.zeros((numpixels, numdumps))
-        for inp in range(numpixels):
-            pixind = self.nc.hdu.data.Inputs == inp
-            pixspectra = self.nc.hdu.data.Data[pixind, :]
-            self.bias[inp, :] = numpy.median(pixspectra, axis=0)
-            self.bias[inp, :].shape = (1, self.numchannels)
-            pixspectra = (pixspectra - self.bias[inp, :])/self.bias[inp, :]
-            self.xpos[inp, :] = self.TelAzMap[pixind]
-            self.ypos[inp, :] = self.TelElMap[pixind]
-            self.all_spectra[inp, :, :] = pixspectra
-
-
+        self.ypos = numpy.zeros((numpixels, numdumps))            
+        if (comb.BufPos == 1).any():
+            # Map with separate reference position in
+            onind = self.BufPos == 0
+            refind = self.BufPos == 1
+            for inp in range(numpixels):
+                pixind = self.nc.hdu.data.Inputs == inp
+                onpixind = numpy.logical_and(onind, pixind)
+                pixspectra = self.nc.hdu.data.Data[onpixind, :]
+                refpixind = numpy.logical_and(refind, pixind)
+                self.bias[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
+                self.bias[inp, :].shape = (1, self.numchannels)
+                pixspectra = (pixspectra - self.bias[inp, :])/self.bias[inp, :]
+                self.xpos[inp, :] = self.TelAzMap[pixind]
+                self.ypos[inp, :] = self.TelElMap[pixind]
+                self.all_spectra[inp, :, :] = pixspectra            
+        else:
+            for inp in range(numpixels):
+                pixind = self.nc.hdu.data.Inputs == inp
+                pixspectra = self.nc.hdu.data.Data[pixind, :]
+                self.bias[inp, :] = numpy.median(pixspectra, axis=0)
+                self.bias[inp, :].shape = (1, self.numchannels)
+                pixspectra = (pixspectra - self.bias[inp, :])/self.bias[inp, :]
+                self.xpos[inp, :] = self.TelAzMap[pixind]
+                self.ypos[inp, :] = self.TelElMap[pixind]
+                self.all_spectra[inp, :, :] = pixspectra
         self.windows = windows
         for i, win in enumerate(self.windows):
             c1, c2 = win
