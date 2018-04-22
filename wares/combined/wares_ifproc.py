@@ -191,6 +191,7 @@ class SpectrumIFProc():
         self.bias = numpy.zeros((numpixels, self.numchannels))
         numdumps = self.BufPos.size/numpixels
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
+        print self.all_spectra.shape
         self.xpos = numpy.zeros((numpixels, numdumps))
         self.ypos = numpy.zeros((numpixels, numdumps))            
         if (self.BufPos == 1).any():
