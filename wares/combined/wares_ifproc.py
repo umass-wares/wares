@@ -189,7 +189,8 @@ class SpectrumIFProc():
             maptype = self.telnc.hdu.header.get('Dcs.ObsPgm')
         numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
         self.bias = numpy.zeros((numpixels, self.numchannels))
-        numdumps = self.BufPos.size/numpixels
+        onind = self.BufPos == 0
+        numdumps = numpy.where(onind)[0].size/4
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
         print self.all_spectra.shape
         self.xpos = numpy.zeros((numpixels, numdumps))
