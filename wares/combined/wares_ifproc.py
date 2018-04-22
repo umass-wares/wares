@@ -202,6 +202,7 @@ class SpectrumIFProc():
                 pixind = self.nc.hdu.data.Inputs == inp
                 onpixind = numpy.logical_and(onind, pixind)
                 pixspectra = self.nc.hdu.data.Data[onpixind, :]
+                print pixspectra.shape
                 refpixind = numpy.logical_and(refind, pixind)
                 self.bias[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
                 self.bias[inp, :].shape = (1, self.numchannels)
