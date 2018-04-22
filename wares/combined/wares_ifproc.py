@@ -181,6 +181,7 @@ class SpectrumIFProc():
                                       subtract=True,
                                       num_imagepixels=200,
                                       linewindows=[(-10, 10),],
+                                      ignore_reference=False,
                                       median_filter=True):
         if self.telnc.hdu.header.get('Dcs.ObsPgm') not in ('Map', 'Lissajous'):
             print "Not a Map scan"
@@ -195,7 +196,7 @@ class SpectrumIFProc():
         print self.all_spectra.shape
         self.xpos = numpy.zeros((numpixels, numdumps))
         self.ypos = numpy.zeros((numpixels, numdumps))            
-        if (self.BufPos == 1).any():
+        if not ignore_reference and (self.BufPos == 1).any():
             # Map with separate reference position in
             print "Processing line map with reference pos observations"
             onind = self.BufPos == 0
@@ -203,7 +204,7 @@ class SpectrumIFProc():
             for inp in range(numpixels):
                 pixind = self.nc.hdu.data.Inputs == inp
                 onpixind = numpy.logical_and(onind, pixind)
-                pixspectra = self.nc.hdu.data.Data[onpixind, :]
+                pixspectra = self.nc.hdu.data.Data[onpixind, :][:numdumps, :] # need this to ensure right sizes
                 print pixspectra.shape
                 refpixind = numpy.logical_and(refind, pixind)
                 self.bias[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
