@@ -209,8 +209,8 @@ class SpectrumIFProc():
                 self.bias[inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
                 self.bias[inp, :].shape = (1, self.numchannels)
                 pixspectra = (pixspectra - self.bias[inp, :])/self.bias[inp, :]
-                self.xpos[inp, :] = self.TelAzMap[pixind]
-                self.ypos[inp, :] = self.TelElMap[pixind]
+                self.xpos[inp, :] = self.TelAzMap[onpixind]
+                self.ypos[inp, :] = self.TelElMap[onpixind]
                 self.all_spectra[inp, :, :] = pixspectra            
         else:
             for inp in range(numpixels):
