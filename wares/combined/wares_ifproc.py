@@ -193,8 +193,9 @@ class SpectrumIFProc():
         self.all_spectra = numpy.zeros((numpixels, numdumps, self.numchannels))
         self.xpos = numpy.zeros((numpixels, numdumps))
         self.ypos = numpy.zeros((numpixels, numdumps))            
-        if (comb.BufPos == 1).any():
+        if (self.BufPos == 1).any():
             # Map with separate reference position in
+            print "Processing line map with reference pos observations"
             onind = self.BufPos == 0
             refind = self.BufPos == 1
             for inp in range(numpixels):
