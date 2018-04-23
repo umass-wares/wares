@@ -11,8 +11,8 @@ from matplotlib.mlab import griddata
 from scipy.signal import medfilt
 
 class SpectrumIFProc():
-    def __init__(self, obsnum):
-        self.nc = WaresNetCDFFile(get_nc_file(obsnum))
+    def __init__(self, obsnum, roach_id=0):
+        self.nc = WaresNetCDFFile(get_nc_file(obsnum, roach_id=roach_id))
         self.telnc = WaresNetCDFFile(get_telnc_file(obsnum))
         self.obsnum = obsnum
         if self.telnc.hdu.header.SourceName != self.nc.hdu.header.get('Telescope.source_name'):
@@ -22,6 +22,7 @@ class SpectrumIFProc():
         self.antTime = self.telnc.hdu.data.BasebandTime - self.telnc.hdu.data.BasebandTime[0]
         self.specTime = self.nc.hdu.data.time - self.nc.hdu.data.time[0]
         self.numchannels = self.nc.hdu.header.get('Mode.numchannels')
+        self.numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
         self.populate_spectral_xaxis()
         self.combine_files()
 
