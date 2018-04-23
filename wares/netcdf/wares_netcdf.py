@@ -180,7 +180,7 @@ class WaresNetCDFFile(LMTNetCDFFile):
         
     def create_header(self, specobj):
         for varname, attrname in header_variables.items():
-            print varname
+            #print varname
             if varname == 'Header.Mode.Bitcode':
                 bcode = getattr(specobj.mode,  attrname)
                 self.nc.variables['Header.Mode.Bitcode'][:len(bcode)] = netCDF4.stringtochar(numpy.array([bcode]))

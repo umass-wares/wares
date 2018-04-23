@@ -21,7 +21,7 @@ class LMTHeader(OrderedNetCDFDict):
         self.dimensions = dimensions
 
     def make_header_keys(self, ncvariables):
-        print "Making header"
+        #print "Making header"
         heads = [name for name in ncvariables.keys() if name.find('Header') != -1]
         print heads
         for head in heads:
