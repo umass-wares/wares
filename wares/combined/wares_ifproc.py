@@ -1,4 +1,4 @@
-"""
+2 *"""
 A class that joins the WARES and 
 IFProc files and is able to derive spectra 
 with positional information
@@ -27,7 +27,8 @@ class SpectrumIFProc():
 
     def populate_spectral_xaxis(self):
         self.chans = numpy.arange(self.numchannels)
-        center_freq = self.telnc.hdu.header.get('Msip1mm.LineFreq')[0]
+        receiver = self.telnc.hdu.header.get('Dcs.Receiver')
+        center_freq = self.telnc.hdu.header.get('%s.LineFreq' % receiver)[0]
         bandwidth = self.nc.hdu.header.get('Mode.Bandwidth')/1000.
         self.frequencies = center_freq + (self.chans - self.numchannels/2) * bandwidth/self.numchannels
         self.velocities = ((self.frequencies - center_freq)/center_freq)*3e5
