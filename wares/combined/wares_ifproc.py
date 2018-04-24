@@ -118,6 +118,7 @@ class SpectrumIFProc():
         for inp in range(4):
             self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
         # need to do a better job of combined sigma
+        
         # for inp in range(4):
         #     #self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
         #     p = numpy.polyfit(self.velocities[ind], self.combined_spectra[inp, :][ind], order)
@@ -208,7 +209,7 @@ class SpectrumIFProc():
             print "Processing line map with reference pos observations"
             onind = self.BufPos == 0
             refind = self.BufPos == 1
-            for inp in range(numpixels):
+            for inp in range(4):
                 pixind = self.nc.hdu.data.Inputs == inp
                 onpixind = numpy.logical_and(onind, pixind)
                 pixspectra = self.nc.hdu.data.Data[onpixind, :][:numdumps, :] # need this to ensure right sizes
@@ -221,7 +222,7 @@ class SpectrumIFProc():
                 self.ypos[inp, :] = self.TelElMap[onpixind][:numdumps]
                 self.all_spectra[inp, :, :] = pixspectra            
         else:
-            for inp in range(numpixels):
+            for inp in range(4):
                 pixind = self.nc.hdu.data.Inputs == inp
                 pixspectra = self.nc.hdu.data.Data[pixind, :]
                 self.bias[inp, :] = numpy.median(pixspectra, axis=0)
