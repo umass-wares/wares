@@ -115,17 +115,17 @@ class SpectrumIFProc():
                 if not subtract:
                     self.spectra[rpt, inp, :] = self.spectra[rpt, inp, :] + numpy.polyval(p, self.velocities)
 
-        for inp in range(4):
-            self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
+        #for inp in range(4):
+        #    self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
         # need to do a better job of combined sigma
         
-        # for inp in range(4):
-        #     #self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
-        #     p = numpy.polyfit(self.velocities[ind], self.combined_spectra[inp, :][ind], order)
-        #     self.combined_spectra[inp, :] = self.combined_spectra[inp, :] - numpy.polyval(p, self.velocities)
-        #     self.combined_sigma[inp] = self.combined_spectra[inp, :][ind].std()
-        #     if not subtract:
-        #         self.combined_spectra[inp, :] = self.combined_spectra[inp, :] + numpy.polyval(p, self.velocities)
+        for inp in range(4):
+            #self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
+            p = numpy.polyfit(self.velocities[ind], self.combined_spectra[inp, :][ind], order)
+            self.combined_spectra[inp, :] = self.combined_spectra[inp, :] - numpy.polyval(p, self.velocities)
+            self.combined_sigma[inp] = self.combined_spectra[inp, :][ind].std()
+            if not subtract:
+                self.combined_spectra[inp, :] = self.combined_spectra[inp, :] + numpy.polyval(p, self.velocities)
                               
     def get_area(self, windows=[(-25, 25)]):
         if not hasattr(self, 'combined_sigma'):
