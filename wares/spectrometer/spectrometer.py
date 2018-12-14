@@ -217,13 +217,15 @@ class Spectrometer(object):
 
             interleave[bramNo::self.mode.nbram] = self.read_bram(inp, bramNo)
 
-        read_time = time.time() - t1
+        write_time = time.time()
+        read_time = write_time-t1
 
         print 'Done with integration'
         print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
 
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
+                                                   write_time,
                                                    interleave)
         if self.nc is None:
             #filename ="%s_%s.nc" % (self.basefile, datetime.datetime.now().strftime('%Y-%m-%d_%H%M%S'))
@@ -268,7 +270,8 @@ class Spectrometer(object):
 
             interleave[bramNo::self.mode.nbram] = self.read_bram(inp, bramNo)
 
-        read_time = time.time() - t1
+        write_time = time.time()
+        read_time = write_time-t1
 
         #print 'Done with integration'
         #print 'acc_n = %i, sync_n = %i' %(acc_n, sync_n)
@@ -282,6 +285,7 @@ class Spectrometer(object):
 
         self.inputs[inp] = SpectrometerIntegration(inp, self.mode.numchannels,
                                                    acc_n, sync_n, read_time,
+                                                   write_time,
                                                    interleave)
         if not queue_enable:
             self.spec_dumps.append(self.inputs[inp])
