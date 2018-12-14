@@ -88,15 +88,16 @@ class SpectrometerWrapper(object):
         #logging.debug('Starting ')
         #print "Starting"
         logger.info("Integration Starting")
+        acc_n = self.spec.get_acc_n()
         while self.integration_active:
-            #t1 = time.time()
-            acc_n = self.spec.get_acc_n()
             for inp in inputs:
                 self.spec.integrate(inp, write_nc=False)
-            while self.spec.get_acc_n() == acc_n:
+            while True:
+                acc_nn = self.spec.get_acc_n()
+                if acc_nn != acc_n:
+                    break
                 time.sleep(0.001)
-            #while time.time() - t1 < self.spec.sync_time:
-            #    time.sleep(0.001)
+            acc_n = acc_nn
         #print "Integration halted"
         logger.info("Integrration halted")
         self.spec.queue.put(None)  # to mark end of data
