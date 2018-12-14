@@ -94,7 +94,7 @@ class SpectrometerWrapper(object):
             acc_nn = self.spec.get_acc_n()
             if acc_nn != acc_n:
                 break
-            time.sleep(0.001)
+            time.sleep(0.0001)
         acc_n = acc_nn
         #now collect data
         while self.integration_active:
@@ -104,7 +104,7 @@ class SpectrometerWrapper(object):
                 acc_nn = self.spec.get_acc_n()
                 if acc_nn != acc_n:
                     break
-                time.sleep(0.001)
+                time.sleep(0.0001)
             acc_n = acc_nn
         #print "Integration halted"
         logger.info("Integrration halted")
