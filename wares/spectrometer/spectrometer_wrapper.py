@@ -4,6 +4,7 @@ from wares.logging import logger
 import spectrometer_modes as spec_modes
 import time
 import threading
+import serial.tools.list_ports
 #import logging
 
 #logging.basicConfig(level=logging.DEBUG,
@@ -69,7 +70,16 @@ class SpectrometerWrapper(object):
         return scale        
         
     def config(self, mode=800, dump_time=0.05):
-        valon = ValonSynthesizer('/dev/ttyUSB%d' % self.roach_id)
+        #get usb port for the right valon
+        valonSN = ['A502NJ6F', 'A5Z7ZF81', 'A5Z7ZC6N', 'A51G8YDP']
+        com = serial.tools.list_ports.comports()
+        for c in com:
+            if c.vid == 0x0403 and c.pid == 0x6001 and valonSN[self.roach_id] == c.serial_number:
+                device = c.device
+                break
+        print 'valonSN[%d] = %s, device = %s'%(self.roach_id, valonSN[self.roach_id], device)
+        valon = ValonSynthesizer(device)
+        #valon = ValonSynthesizer('/dev/ttyUSB%d' % self.roach_id)
         #print "Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A)
         logger.info("Current Frequency: %s MHz" % valon.get_frequency(SYNTH_A))
         valon.set_frequency(SYNTH_A, synth_freq[mode])
