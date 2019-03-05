@@ -1,25 +1,31 @@
-2 *"""
+"""
 A class that joins the WARES and 
 IFProc files and is able to derive spectra 
 with positional information
 """
 from wares.utils.file_utils import get_telnc_file, get_nc_file
 from wares.netcdf.wares_netcdf import WaresNetCDFFile
+from wares.logging import logger
 import numpy
 from scipy.interpolate import interp1d
 from matplotlib.mlab import griddata
 from scipy.signal import medfilt
+from scipy import __version__ as scipy_version
+logger.name = __name__
 
 class SpectrumIFProc():
-    def __init__(self, obsnum, roach_id=0):
-        self.nc = WaresNetCDFFile(get_nc_file(obsnum, roach_id=roach_id))
+    def __init__(self, obsnum, roach_id=0,
+                 spec_basepat='/data_lmt/spectrometer'):
+        self.nc = WaresNetCDFFile(get_nc_file(obsnum, basepat=spec_basepat,
+                                              roach_id=roach_id))
         self.telnc = WaresNetCDFFile(get_telnc_file(obsnum))
         self.obsnum = obsnum
         if self.telnc.hdu.header.SourceName != self.nc.hdu.header.get('Telescope.source_name'):
             print "Source Name not same in IFProc and WARES files"
         if self.telnc.hdu.header.ObsPgm != self.nc.hdu.header.get('Telescope.obspgm'):
             print "ObsPgm not same in IFProc and WARES files"
-        self.antTime = self.telnc.hdu.data.BasebandTime - self.telnc.hdu.data.BasebandTime[0]
+        #self.antTime = self.telnc.hdu.data.BasebandTime - self.telnc.hdu.data.BasebandTime[0]
+        self.antTime = self.telnc.hdu.data.TelTime - self.telnc.hdu.data.TelTime[0]
         self.specTime = self.nc.hdu.data.time - self.nc.hdu.data.time[0]
         self.numchannels = self.nc.hdu.header.get('Mode.numchannels')
         self.numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
@@ -35,7 +41,10 @@ class SpectrumIFProc():
         self.velocities = ((self.frequencies - center_freq)/center_freq)*3e5
         
     def interpolate(self, quantity):
-        return interp1d(self.antTime, quantity, fill_value='extrapolate')(self.specTime)
+        if scipy_version >= '0.17.0':
+            return interp1d(self.antTime, quantity, fill_value='extrapolate')(self.specTime)
+        else:
+            return interp1d(self.antTime, quantity)(self.specTime)
         
     def combine_files(self):
         self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos).astype(numpy.int)
@@ -91,6 +100,71 @@ class SpectrumIFProc():
             onpixind = numpy.logical_and(onind, pixind)
 
             self.onspec[inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
+
+    def process_ifproc_map(self, remove_offset=False, numoff=20,
+                           scigrid=False,
+                           **kwargs):
+        """
+        processes Map Obspgm that has been made in IFProc
+        continuum mode. Uses a regridding algorithm
+        and uses some kwargs arguments to derive output
+        grid size and sampling
+        """
+        if self.telnc.hdu.header.ObsPgm not in ('Map', 'Lissajous'):
+            logger.error("Not a Map datafile")
+            return
+        else:
+            maptype = self.telnc.hdu.header.ObsPgm
+        logger.info("Processing MSIP 1mm Continuum Map data and regridding for Observation with ObsNum %d" % int(self.telnc.hdu.header.ObsNum))
+        self.numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
+        xlength = numpy.degrees(self.telnc.hdu.header.get('%s.XLength' % maptype))*3600.0
+        ylength = numpy.degrees(self.telnc.hdu.header.get('%s.YLength' % maptype))*3600.0
+        if maptype == 'Lissajous':
+            xlength = xlength/numpy.cos(numpy.radians(45))
+            xlength = ylength/numpy.cos(numpy.radians(45))
+        ind = numpy.where(self.telnc.hdu.data.BufPos == 0)
+        xpos = numpy.degrees(self.telnc.hdu.data.TelAzMap[ind])*3600.
+        ypos = numpy.degrees(self.telnc.hdu.data.TelElMap[ind])*3600.
+        rows = self.telnc.hdu.header.get('Map.RowsPerScan')
+        z = {}
+        self.off_source = {}
+        for chan in range(self.numpixels):
+            z[chan] = self.telnc.hdu.data.BasebandLevel[ind, chan].flatten()
+            self.off_source[chan] = numpy.histogram(self.telnc.hdu.data.BasebandLevel[ind, chan].flatten())[1][:4].mean()
+            if remove_offset:
+                z[chan] = z[chan] - self.off_source[chan]
+            print z[chan].shape
+        ramp = kwargs.get('ramp', 5.)
+        numpoints = kwargs.get('numpoints', 100)
+        numypoints = kwargs.get('numypoints', 100)
+        xlength = xlength * (1.-ramp/100.)
+        ylength = ylength * (1.-ramp/100.)
+        ind = numpy.logical_and(xpos > -xlength/2., xpos < xlength/2.)
+        xpos, ypos = xpos[ind], ypos[ind]
+        # add a tiny random number to stop griddata from crashing when two pixels are same
+        xpos = xpos + numpy.random.random(xpos.size)*1e-6
+        ypos = ypos + numpy.random.random(ypos.size)*1e-6
+        for chan in range(self.numpixels):
+            z[chan] = z[chan][ind]
+        ind = numpy.logical_and(ypos > -ylength/2., ypos < ylength/2.)
+        xpos, ypos = xpos[ind], ypos[ind]
+        for chan in range(self.numpixels):
+            z[chan] = z[chan][ind]
+        self.xi = numpy.linspace(-xlength/2, xlength/2, numpoints)
+        self.yi = numpy.linspace(-ylength/2, ylength/2, numypoints)
+        print "Making %d x %d map" % (numpoints, numypoints)
+        #self.z = z
+        #self.xpos = xpos
+        #self.ypos = ypos
+        self.BeamMap = numpy.zeros((self.yi.size, self.xi.size, self.numpixels))
+        for chan in range(self.numpixels):
+            #self.BeamMap[chan] = numpy.zeros((self.yi.size, self.xi.size),
+            #                                 dtype='float')
+            if scigrid:
+                self.BeamMap[:, :, chan] = scipy.interpolate.griddata(xpos, ypos, z[chan], (self.xi, self.yi),
+                                                                      method='cubic')
+            else:
+                self.BeamMap[:, :, chan] = griddata(xpos, ypos, z[chan], self.xi, self.yi)
             
     def baseline(self, windows=[(-100, -50), (50, 100)], order=0,
                  subtract=False):
@@ -291,5 +365,5 @@ class SpectrumIFProc():
             hotspec = medfilt(self.nc.hdu.data.Data[indexh, :].mean(axis=0))
             skyspec = medfilt(self.nc.hdu.data.Data[indexs, :].mean(axis=0))
             self.tsys_spec[inp, :] = Tamb * skyspec/(hotspec - skyspec)
-            self.tsys[inp] = self.tsys_spec[inp, 100: 2048-100].mean()
+            self.tsys[inp] = self.tsys_spec[inp, 100: self.numchannels-100].mean()
             print "Pixel: %d, Tsys: %.3f K" % (inp, self.tsys[inp])
