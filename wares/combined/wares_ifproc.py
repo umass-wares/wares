@@ -57,7 +57,7 @@ class SpectrumIFProc():
             return
         if calibrate:
             calobsnum = self.telnc.hdu.header.get('IfProc.CalObsNum', None)
-            if calobsbum is None:
+            if calobsnum is None:
                 print "No cal obs number defined"
                 return
             else:
