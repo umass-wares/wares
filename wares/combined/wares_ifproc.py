@@ -79,7 +79,8 @@ class SpectrumIFProc():
         self.TelAzMap = self.interpolate(self.telnc.hdu.data.TelAzMap)
         self.TelElMap = self.interpolate(self.telnc.hdu.data.TelElMap)
         
-    def process_ps(self):
+
+    def process_ps(self, calibrate=False):
         """
         Process spectra if ObsPgm is Position Switch ('Ps')
         """
@@ -87,6 +88,15 @@ class SpectrumIFProc():
         if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'Ps':
             print "Not a PS scan"
             return
+        if calibrate:
+            calobsnum = self.telnc.hdu.header.get('IfProc.CalObsNum', None)
+            if calobsnum is None:
+                print "No cal obs number defined"
+                return
+            else:
+                calobsnum = calobsnum[0]
+            self.cal_comb = SpectrumIFProc(calobsnum)
+            self.cal_comb.process_spectral_cal()
         num_repeats = self.telnc.hdu.header.get('Ps.NumRepeats')
         
         # Finds indices that match a switching BufPos
