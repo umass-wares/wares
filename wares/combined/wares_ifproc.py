@@ -16,23 +16,34 @@ logger.name = __name__
 class SpectrumIFProc():
     def __init__(self, obsnum, roach_id=0,
                  spec_basepat='/data_lmt/spectrometer'):
+
+        # Spectrometer NetCDF (wares spectra)
         self.nc = WaresNetCDFFile(get_nc_file(obsnum, basepat=spec_basepat,
                                               roach_id=roach_id))
+
+        # Telescope NetCDF (Total Power, Telescope information)
         self.telnc = WaresNetCDFFile(get_telnc_file(obsnum))
-        self.obsnum = obsnum
+
         if self.telnc.hdu.header.SourceName != self.nc.hdu.header.get('Telescope.source_name'):
             print "Source Name not same in IFProc and WARES files"
         if self.telnc.hdu.header.ObsPgm != self.nc.hdu.header.get('Telescope.obspgm'):
             print "ObsPgm not same in IFProc and WARES files"
+
+        self.obsnum = obsnum
+        self.obspgm = self.telnc.hdu.header.ObsPgm
         #self.antTime = self.telnc.hdu.data.BasebandTime - self.telnc.hdu.data.BasebandTime[0]
-        self.antTime = self.telnc.hdu.data.TelTime - self.telnc.hdu.data.TelTime[0]
-        self.specTime = self.nc.hdu.data.time - self.nc.hdu.data.time[0]
-        self.numchannels = self.nc.hdu.header.get('Mode.numchannels')
-        self.numpixels = self.telnc.hdu.data.BasebandLevel.shape[1]
-        self.populate_spectral_xaxis()
-        self.combine_files()
+        self.antTime = self.telnc.hdu.data.TelTime - self.telnc.hdu.data.TelTime[0] # Antenna Time [s]
+        self.specTime = self.nc.hdu.data.time - self.nc.hdu.data.time[0] # Wares Time [s]
+        self.numchannels = self.nc.hdu.header.get('Mode.numchannels') # no. of bins in Wares mode spectrum
+        self.numpixels = self.telnc.hdu.data.BasebandLevel.shape[1] 
+        self.populate_spectral_xaxis() #??
+        self.combine_files() #see below
 
     def populate_spectral_xaxis(self):
+        """
+        Adds "x-axis" arrays to the class variables.
+        
+        """
         self.chans = numpy.arange(self.numchannels)
         receiver = self.telnc.hdu.header.get('Dcs.Receiver')
         center_freq = self.telnc.hdu.header.get('%s.LineFreq' % receiver)[0]
@@ -41,32 +52,55 @@ class SpectrumIFProc():
         self.velocities = ((self.frequencies - center_freq)/center_freq)*3e5
         
     def interpolate(self, quantity):
+        """
+        Uses 'scipy.interp1d'
+
+        Interpolating function: quantity(antTime)
+        Where 'quantity' is a telescope position time series (BufPos, TelAzMap, TelElMap)
+        and 'antTime' is the Antenna Time
+
+        Abscissa: specTime
+        
+        returns: quantitiy(specTime)
+        """
+
         if scipy_version >= '0.17.0':
             return interp1d(self.antTime, quantity, fill_value='extrapolate')(self.specTime)
         else:
             return interp1d(self.antTime, quantity)(self.specTime)
         
     def combine_files(self):
+        """
+        Calls 'self.interpolate' to set telescope position time series (BufPos, TelAzMap,
+        TelElMap) from Antenna Time to Wares Time
+        """
+
         self.BufPos = self.interpolate(self.telnc.hdu.data.BufPos).astype(numpy.int)
         self.TelAzMap = self.interpolate(self.telnc.hdu.data.TelAzMap)
         self.TelElMap = self.interpolate(self.telnc.hdu.data.TelElMap)
         
     def process_ps(self):
+        """
+        Process spectra if ObsPgm is Position Switch ('Ps')
+        """
+        
         if self.telnc.hdu.header.get('Dcs.ObsPgm') != 'Ps':
             print "Not a PS scan"
             return
         num_repeats = self.telnc.hdu.header.get('Ps.NumRepeats')
+        
+        # Finds indices that match a switching BufPos
         bufind_edges = list(numpy.where(numpy.diff(self.BufPos) != 0)[0])
         bufind_edges.insert(0, 0)
-        bufind_edges.append(bufind_edges[-1] + 50000)
+        bufind_edges.append(bufind_edges[-1] + 50000) # Adding 50,000*t_res [s] ?
         #refind = self.BufPos == 1
         #onind = self.BufPos == 0
 
+        self.spectra = numpy.zeros((num_repeats, self.numpixels, self.numchannels))
+        self.refspec = numpy.zeros((num_repeats, self.numpixels, self.numchannels))
+        self.onspec = numpy.zeros((num_repeats, self.numpixels, self.numchannels))
+        self.combined_spectra = numpy.zeros((self.numpixels, self.numchannels))
         
-        self.spectra = numpy.zeros((num_repeats, 4, self.numchannels))
-        self.refspec = numpy.zeros((num_repeats, 4, self.numchannels))
-        self.onspec = numpy.zeros((num_repeats, 4, self.numchannels))
-        self.combined_spectra = numpy.zeros((4, self.numchannels))
         for rpt in range(num_repeats):
             refind_start = bufind_edges[2*rpt] + 2 
             refind_end = bufind_edges[2*rpt + 1] - 2 
@@ -83,6 +117,7 @@ class SpectrumIFProc():
                 self.refspec[rpt, inp, :] = self.nc.hdu.data.Data[refpixind, :].mean(axis=0)
                 self.onspec[rpt, inp, :] = self.nc.hdu.data.Data[onpixind, :].mean(axis=0)
                 self.spectra[rpt, inp, :] = (self.onspec[rpt, inp, :] - self.refspec[rpt, inp, :])/self.refspec[rpt, inp, :]
+        
         for inp in range(4):
             self.combined_spectra[inp, :] = self.spectra[:, inp, :].mean(axis=0)
 
