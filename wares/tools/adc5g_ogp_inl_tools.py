@@ -1,4 +1,4 @@
-import adc5g
+from wares import adc5g
 #from hp8780a import HP8780A
 #import time
 #import datetime
