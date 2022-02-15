@@ -175,7 +175,7 @@ class WaresNetCDFFile(LMTNetCDFFile):
         var = self.nc.createVariable('Header.Mode.Bitcode', numpy.dtype('S1'), ('Header.Mode.Bitcode_slen', ))
         var = self.nc.createVariable('Header.Telescope.source_name', numpy.dtype('S1'), ('Header.Telescope.source_name_slen', ))
         var = self.nc.createVariable('Header.Telescope.obspgm', numpy.dtype('S1'), ('Header.Telescope.obspgm_slen', ))        
-        var = self.nc.createVariable('Data.Integrate.Data', numpy.dtype('float'), ('time', 'numchannels'))
+        var = self.nc.createVariable('Data.Integrate.Data', numpy.dtype('int32'), ('time', 'numchannels'))
         var.setncattr('long_name', 'Spectrum')
         
     def create_header(self, specobj):
