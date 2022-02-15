@@ -203,7 +203,7 @@ class Spectrometer(object):
         self.interleave[bramNo::self.mode.nbram] = np.array(struct.unpack('>%dl' %(self.mode.numchannels/self.mode.nbram),
                                      self.roach.read('bram%i%i' %(inp,bramNo),
                                      4.*(self.mode.numchannels/self.mode.nbram), 0)),
-                                     dtype='float')
+                                     dtype='int32')
 
     def integrate_by_input(self, inp):
         print "Integrating on input %d" % inp
@@ -211,7 +211,7 @@ class Spectrometer(object):
         acc_n = self.get_acc_n()
         sync_n = self.get_sync_cnt()
 
-        interleave = np.empty((self.mode.numchannels,), dtype=float)
+        interleave = np.empty((self.mode.numchannels,), dtype='int32')
 
         for bramNo in range(self.mode.nbram):
 
@@ -264,7 +264,7 @@ class Spectrometer(object):
         # test code finish
         sync_n = self.get_sync_cnt()
 
-        interleave = np.empty((self.mode.numchannels,), dtype=float)
+        interleave = np.empty((self.mode.numchannels,), dtype='int32')
 
         for bramNo in range(self.mode.nbram):
 
@@ -317,7 +317,7 @@ class Spectrometer(object):
         acc_n = self.get_acc_n()
         sync_n = self.get_sync_cnt()
 
-        self.interleave = np.empty((self.mode.numchannels,), dtype=float)
+        self.interleave = np.empty((self.mode.numchannels,), dtype='int32')
         ncpu = multiprocessing.cpu_count()
         
         #self.pstop = ProcessStopper()
