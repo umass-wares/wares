@@ -75,10 +75,12 @@ class SpectrometerWrapper(object):
         
     def config(self, mode=800, dump_time=0.05):
         #get usb port for the right valon
-        valonSN = ['A502NJ6F', 'A5Z7ZF81', 'A5Z7ZC6N', 'A51G8YDP']
+        valonSN = ['A502NJ6F', 'A5Z7ZF81', 'A5Z7ZC6N', 'A51G8YDP', 'A53FKXPB', 'A53FKXOP', 'A53FKXO0', 'A53FKXQ2']
         device = None
         com = serial.tools.list_ports.comports()
         for c in com:
+            if not c.device.startswith("/dev/ttyUSB"): continue
+            logger.info('look at valonSN %s for %s'%(c.serial_number, valonSN[self.roach_id]))
             if c.vid == 0x0403 and c.pid == 0x6001 and valonSN[self.roach_id] == c.serial_number:
                 device = c.device
                 break
