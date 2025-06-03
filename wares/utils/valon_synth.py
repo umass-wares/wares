@@ -86,6 +86,7 @@ class Synthesizer:
         #self.conn.setPort(port)
 
         self.conn.port = port
+        self.conn.timeout = 1.0
 
 
     def get_frequency(self, synth):
